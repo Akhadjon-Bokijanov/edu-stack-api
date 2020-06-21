@@ -42,7 +42,7 @@ router.post('/', async (req, res) => {
 	}
 });
 
-router.delete('/newsID', async (req, res) => {
+router.delete('/:newsID', async (req, res) => {
 	try {
 		const removed = await News.remove({ _id: req.params.newsID});
 		res.json(removed);
