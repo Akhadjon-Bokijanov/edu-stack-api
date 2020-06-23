@@ -29,8 +29,8 @@ router.post('/', async (req, res) => {
 		description: req.body.description,
 		organization: req.body.organization,
 		category: req.body.category,
-		image_url: req.body.image_url,
-		importance: req.body.importance
+		imageUrl: req.body.imageUrl,
+		isImportant: req.body.isImportant,
 	});
 
 	try {
@@ -62,8 +62,8 @@ router.patch('/:newsID', async (req, res) => {
 					description: req.body.description,
 					organization: req.body.organization,
 					category: req.body.category,
-					image_url: req.body.image_url,
-					importance: req.body.importance
+					imageUrl: req.body.imageUrl,
+					isImportant: req.body.isImportant
 				} 
 			}
 		);
