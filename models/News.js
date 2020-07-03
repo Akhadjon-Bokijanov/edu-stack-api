@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const NewsSchema = mongoose.Schema({
+const NewsSchema = new mongoose.Schema({
 	title: {
 		type: String,
 		required: true
@@ -17,6 +17,10 @@ const NewsSchema = mongoose.Schema({
 		default: Date.now
 	},
 	isImportant: {
+		type: Boolean,
+		default: false
+	},
+	status: {
 		type: Boolean,
 		default: false
 	}

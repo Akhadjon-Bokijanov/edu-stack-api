@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const News = require('../models/News');
+const auth = require('../helpers/auth');
+const { admin, collaborator } = require('../helpers/admin');
 
 router.use(function(req, res, next) {
 	res.header("Access-Control-Allow-Origin", "http://localhost:3000"); // update to match the domain you will make the request from
@@ -28,7 +30,7 @@ router.get('/:newsID', async (req, res) => {
 	}
 });
 
-router.post('/', async (req, res) => {
+router.post('/', [auth, collaborator], async (req, res) => {
 	const news = new News({
 		title: req.body.title,
 		description: req.body.description,
@@ -47,7 +49,7 @@ router.post('/', async (req, res) => {
 	}
 });
 
-router.delete('/:newsID', async (req, res) => {
+router.delete('/:newsID', [auth, admin], async (req, res) => {
 	try {
 		const removed = await News.remove({ _id: req.params.newsID});
 		res.json(removed);
@@ -57,7 +59,7 @@ router.delete('/:newsID', async (req, res) => {
 	}
 });
 
-router.patch('/:newsID', async (req, res) => {
+router.patch('/:newsID', [auth, admin], async (req, res) => {
 	try {
 		const update = await News.updateOne(
 			{ _id: req.params.newsID},
@@ -76,6 +78,23 @@ router.patch('/:newsID', async (req, res) => {
 	}
 	catch(err) {
 		res.json({ message: err });
+	}
+});
+
+router.post('/approve/:newsID', [auth, admin], async (req, res) => {
+	try {
+		const news = await News.updateOne(
+			{ _id: req.params.newsID},
+			{
+				$set: {
+					status: true
+				} 
+			}
+		);
+		res.status(200).json(news);
+	}
+	catch(err) {
+		res.status(400).json( { message : err.message});
 	}
 });
 
