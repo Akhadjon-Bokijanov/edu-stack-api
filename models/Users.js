@@ -21,26 +21,26 @@ const userSchema = new mongoose.Schema({
 		type: String,
 		required: true
 	},
-	info: {
-		address: {
-			type: String,
-			trim: true,
-			default: "O'zbekiston"
-		},
-		postNumber: {
-			type: Number,
-			default: 0
-		},
-		isCollaborator: {
-			type: Boolean,
-			default: true
-		}
-	}
+	address: {
+		type: String,
+		trim: true,
+		default: "O'zbekiston"
+	},
+	postIds: {
+		type: [String],
+		default: []
+	},
+	role: {
+		type: String,
+		default: "applicant"
+	}	
 });
 
 
 userSchema.methods.genToken = function() {
-	const token = jwt.sign(_.pick(this, ['_id', 'firstName', 'lastName', 'email', 'info']), process.env.jwtPrivateKey);
+	const token = jwt.sign(
+		_.pick(this, ['_id', 'firstName', 'lastName', 'email', 'role', 'address']), 
+		process.env.jwtPrivateKey);
 	return token;
 }
 

@@ -1,12 +1,12 @@
 // admins created manually for now
 
 function admin(req, res, next) {   
-  if (!req.user.info.isAdmin) return res.status(403).send('Access denied.');
+  if (req.user.role != 'admin') return res.status(403).send('Access denied.');
   next();
 }
 
 function collaborator(req, res, next) {
-	if(req.user.info.isCollaborator || req.user.info.isAdmin)  {
+	if(req.user.role == 'collaborator' || req.user.role == 'admin') {
 		next();
 	}
 	else {

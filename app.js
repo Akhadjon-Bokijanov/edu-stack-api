@@ -12,7 +12,7 @@ const loginRoute = require('./routes/login');
 
 // database connection
 mongoose.connect(
-	process.env.ConnectionString, {useNewUrlParser: true});
+	process.env.ConnectionString, {autoIndex: false, useNewUrlParser: true});
 
 
 // all middleware functions

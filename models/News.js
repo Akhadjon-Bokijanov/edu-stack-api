@@ -11,7 +11,10 @@ const NewsSchema = new mongoose.Schema({
 	},
 	imageUrl: String,
 	organization: String,
-	category: String,
+	category: {
+		type: String,
+		default: "Ta'lim"
+	},
 	date: {
 		type: Date,
 		default: Date.now
@@ -23,6 +26,9 @@ const NewsSchema = new mongoose.Schema({
 	status: {
 		type: Boolean,
 		default: false
+	},
+	detail: {
+		type: String
 	}
 });
 
