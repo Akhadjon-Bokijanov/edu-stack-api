@@ -4,6 +4,7 @@ EduStackAPI server
 
 API docs:
   **Attention: Error messages and bad requests should be taken into account!
+  
    ------------------------------------------------------- Sign in/up ---------------------------------------------------------
   .../ES/api/register -> {
     request type: POST,
