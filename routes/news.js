@@ -38,6 +38,7 @@ router.post('/', [auth, collaborator], async (req, res) => {
 		category: req.body.category,
 		imageUrl: req.body.imageUrl,
 		isImportant: req.body.isImportant,
+		detail: req.body.detail
 	});
 
 	try {
@@ -70,7 +71,8 @@ router.patch('/:newsID', [auth, admin], async (req, res) => {
 					organization: req.body.organization,
 					category: req.body.category,
 					imageUrl: req.body.imageUrl,
-					isImportant: req.body.isImportant
+					isImportant: req.body.isImportant,
+					detail: req.body.detail
 				} 
 			}
 		);
