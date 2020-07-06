@@ -19,7 +19,8 @@ const upload = multer({ storage: storage });
 
 router.use(function(req, res, next) {
 	res.header("Access-Control-Allow-Origin", "http://localhost:3000"); // update to match the domain you will make the request from
-	res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+	res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, x-token");
+	res.header("Access-Control-Allow-Methods", "GET, PATCH, DELETE, POST, PUT, HEAD");
 	next();
   });
 
@@ -46,7 +47,21 @@ router.get('/:newsID', async (req, res) => {
 	}
 });
 
+<<<<<<< HEAD
 router.post('/', [upload.single('imageUrl') ,auth, collaborator], async (req, res) => {
+=======
+router.post('/', [auth, collaborator], async (req, res) => {
+	const news = new News({
+		title: req.body.title,
+		description: req.body.description,
+		organization: req.body.organization,
+		category: req.body.category,
+		imageUrl: req.body.imageUrl,
+		isImportant: req.body.isImportant,
+		detail: req.body.detail
+	});
+
+>>>>>>> efcaafb46eab1c49d8a460608b54ae912109898d
 	try {
 		let news = new News({
 			title: req.body.title,
