@@ -1,8 +1,21 @@
 const express = require('express');
 const router = express.Router();
+const multer = require('multer');
 const News = require('../models/News');
+const User = require('../models/Users');
 const auth = require('../helpers/auth');
-const { admin, collaborator } = require('../helpers/admin');
+const { admin, collaborator, newsCreator } = require('../helpers/admin');
+
+const storage = multer.diskStorage({
+	destination: function(req, file, cb) {
+		cb(null, './uploads/newsImages/');
+	},
+	filename: function(req, file, cb) {
+		cb(null, new Date().toISOString() + file.originalname);
+	}
+});
+const upload = multer({ storage: storage });
+
 
 router.use(function(req, res, next) {
 	res.header("Access-Control-Allow-Origin", "http://localhost:3000"); // update to match the domain you will make the request from
@@ -13,53 +26,59 @@ router.use(function(req, res, next) {
 router.get('/', async (req, res) => {
 	try {
 		const news = await News.find();
-		res.json(news);
+		res.status(200).json(news);
 	}
 	catch(err) {
-		res.json({ message : err });
+		res.status(400).json({ message : err });
 	}
 });
 
 router.get('/:newsID', async (req, res) => {
 	try {
 		const news = await News.findById(req.params.newsID);
-		res.json(news);
+		if(!news) {
+			return res.status(404).send('News not found.');
+		}
+		res.status(200).json(news);
 	}
 	catch(err) {
-		res.json({ message : err });
+		res.status(400).json({ message : err });
 	}
 });
 
-router.post('/', [auth, collaborator], async (req, res) => {
-	const news = new News({
-		title: req.body.title,
-		description: req.body.description,
-		organization: req.body.organization,
-		category: req.body.category,
-		imageUrl: req.body.imageUrl,
-		isImportant: req.body.isImportant,
-	});
-
+router.post('/', [upload.single('imageUrl') ,auth, collaborator], async (req, res) => {
 	try {
+		let news = new News({
+			title: req.body.title,
+			description: req.body.description,
+			organization: req.body.organization,
+			category: req.body.category,
+			imageUrl: req.body.imageUrl,
+			isImportant: req.body.isImportant,
+			detail: req.body.detail
+		});
+		console.log('req ', req.body);
+		news.creatorId = req.user._id;
 		const savedNews = await news.save();
-		res.json(savedNews);
+		
+		res.status(200).json(savedNews);
 	}
 	catch(err) {
-		res.json({ message : err });
+		res.status(400).json({ message : err });
 	}
 });
 
-router.delete('/:newsID', [auth, admin], async (req, res) => {
+router.delete('/:newsID', [auth, newsCreator], async (req, res) => {
 	try {
 		const removed = await News.remove({ _id: req.params.newsID});
-		res.json(removed);
+		res.status(200).json(removed);
 	}
 	catch(err) {
-		res.json({ message : err });
+		res.status(400).json({ message : err });
 	}
 });
 
-router.patch('/:newsID', [auth, admin], async (req, res) => {
+router.patch('/:newsID', [auth, newsCreator], async (req, res) => {
 	try {
 		const update = await News.updateOne(
 			{ _id: req.params.newsID},
@@ -70,14 +89,15 @@ router.patch('/:newsID', [auth, admin], async (req, res) => {
 					organization: req.body.organization,
 					category: req.body.category,
 					imageUrl: req.body.imageUrl,
-					isImportant: req.body.isImportant
+					isImportant: req.body.isImportant,
+					detail: req.body.detail
 				} 
 			}
 		);
-		res.json(update);
+		res.status(200).json(update);
 	}
 	catch(err) {
-		res.json({ message: err });
+		res.status(400).json({ message: err });
 	}
 });
 

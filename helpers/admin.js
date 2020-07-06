@@ -1,4 +1,6 @@
 // admins created manually for now
+const News = require('../models/News');
+
 
 function admin(req, res, next) {   
   if (req.user.role != 'admin') return res.status(403).send('Access denied.');
@@ -14,7 +16,17 @@ function collaborator(req, res, next) {
 	}
 }
 
+function newsCreator(req, res, next) {
+	if(req.user.role == 'admin' || req.user._id == req.body.creatorId) {
+		next();
+	}
+	else {
+		return res.status(403).send('Access denied.');
+	}
+}
+
 module.exports = {
 	admin: admin,
-	collaborator: collaborator
+	collaborator: collaborator,
+	newsCreator: newsCreator
 };
