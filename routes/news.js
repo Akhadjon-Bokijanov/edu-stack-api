@@ -47,9 +47,6 @@ router.get('/:newsID', async (req, res) => {
 	}
 });
 
-<<<<<<< HEAD
-router.post('/', [upload.single('imageUrl') ,auth, collaborator], async (req, res) => {
-=======
 router.post('/', [auth, collaborator], async (req, res) => {
 	const news = new News({
 		title: req.body.title,
@@ -60,8 +57,6 @@ router.post('/', [auth, collaborator], async (req, res) => {
 		isImportant: req.body.isImportant,
 		detail: req.body.detail
 	});
-
->>>>>>> efcaafb46eab1c49d8a460608b54ae912109898d
 	try {
 		let news = new News({
 			title: req.body.title,
