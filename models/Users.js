@@ -26,20 +26,21 @@ const userSchema = new mongoose.Schema({
 		trim: true,
 		default: "O'zbekiston"
 	},
-	postIds: {
-		type: [String],
-		default: []
-	},
 	role: {
 		type: String,
 		default: "applicant"
-	}	
+	},
+	avatar: {
+		type: String,
+		default: 'uploads/avatars/default.png'
+	},
+	testScores: [{}]
 });
 
 
 userSchema.methods.genToken = function() {
 	const token = jwt.sign(
-		_.pick(this, ['_id', 'firstName', 'lastName', 'email', 'role', 'address', 'postIds']), 
+		_.pick(this, ['_id', 'firstName', 'lastName', 'email', 'role', 'address']), 
 		process.env.jwtPrivateKey);
 	return token;
 }

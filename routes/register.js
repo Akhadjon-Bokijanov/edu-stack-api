@@ -14,7 +14,7 @@ router.use(function(req, res, next) {
 router.post('/', async (req, res) => {
 	try {
 		let user = new User(
-			_.pick(req.body, ['firstName', 'lastName', 'email', 'password', 'role']));
+			_.pick(req.body, ['firstName', 'lastName', 'email', 'password', 'role', 'testScores']));
 		const check = await User.findOne({ email: req.body.email });
 		if(check) {
 			return res.status(400).send('This email already exists.');

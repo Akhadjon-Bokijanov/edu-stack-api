@@ -9,7 +9,10 @@ const NewsSchema = new mongoose.Schema({
 		type: String,
 		required: true
 	},
-	imageUrl: String,
+	imageUrl: {
+		type: String,
+		default: 'uploads/newsImages/default.png'
+	},
 	organization: String,
 	category: {
 		type: String,
@@ -27,6 +30,7 @@ const NewsSchema = new mongoose.Schema({
 		type: Boolean,
 		default: false
 	},
+	creatorId: String,
 	detail: {
 		type: String
 	}
