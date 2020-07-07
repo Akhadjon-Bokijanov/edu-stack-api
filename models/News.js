@@ -16,7 +16,7 @@ const NewsSchema = new mongoose.Schema({
 	organization: String,
 	category: {
 		type: String,
-		default: "Ta'lim"
+		default: "Education"
 	},
 	date: {
 		type: Date,
