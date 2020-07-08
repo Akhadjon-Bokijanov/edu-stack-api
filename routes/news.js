@@ -6,17 +6,16 @@ const News = require('../models/News');
 const User = require('../models/Users');
 const auth = require('../helpers/auth');
 const { admin, collaborator, newsCreator } = require('../helpers/admin');
+const { storage, fileFilter } = require('../helpers/multerVars');
 
-const storage = multer.diskStorage({
-	destination: function(req, file, cb) {
-		cb(null, './uploads/newsImages');
+
+const upload = multer({ 
+	storage: storage,
+	limits: {
+		fileSize: 1024 * 1024 * 5
 	},
-	filename: function(req, file, cb) {
-		const date = new Date;
-		cb(null, `${ req.user._id }_${ date.getTime()}.${ file.mimetype.split('/')[1] }`);
-	}
+	fileFilter: fileFilter
 });
-const upload = multer({ storage: storage });
 
 
 router.use(function(req, res, next) {
@@ -49,33 +48,37 @@ router.get('/:newsID', async (req, res) => {
 	}
 });
 
-router.post('/', [auth, upload.single('imageUrl'), collaborator], async (req, res) => {
-	try {
+router.post('/', [auth, upload.any(), collaborator], async (req, res) => {
+	try {	
 		let news = new News({
 			title: req.body.title,
 			description: req.body.description,
 			organization: req.body.organization,
 			category: req.body.category,
-			imageUrl: req.file.path,
 			isImportant: req.body.isImportant,
 			detail: req.body.detail
 		});
+		if(req.files.length > 0) {
+			news.imageUrl = req.files[0].path;
+		}
 		news.creatorId = req.user._id;
 		const savedNews = await news.save();
 		
 		res.status(200).json(savedNews);
 	}
-	catch(err) {
-		res.status(400).json({ message : err });
+	catch (err) {
+		res.status(400).json({ message: err.message });
 	}
 });
 
 router.delete('/:newsID', [auth, newsCreator], async (req, res) => {
 	try {
 		const news = await News.findById(req.params.newsID);
-		fs.unlink(news.imageUrl, (err) => {
-			if(err) throw err;
-		});
+		if(news.imageUrl !== 'uploads/newsImages/default.png') {
+			fs.unlink(news.imageUrl, (err) => {
+				if(err) throw err;
+			});
+		}	
 		const removed = await News.remove({ _id: req.params.newsID});
 		res.status(200).json(removed);
 	}
