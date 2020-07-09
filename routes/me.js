@@ -68,7 +68,7 @@ router.patch('/changePhoto', [auth, upload.any()], async (req, res) => {
 
 router.patch('/changePassword', auth, async (req, res) => {
 	try {	
-		const user = await User.findById({ req.user._id });
+		const user = await User.findById(req.user._id);
 
 		const match = await bcrypt.compare(req.body.oldPassword, user.password);
 		if(match) {
@@ -93,5 +93,26 @@ router.patch('/changePassword', auth, async (req, res) => {
 	}
 });
 
+
+router.patch('/changeInfo', auth, async (req, res) => {
+	try {
+		const user = await User.updateOne(
+			{ _id: req.user._id },
+			{
+				$set: {
+					firstname: req.body.firstname,
+					lastName: req.body.lastName,
+					address: req.body.address,
+					occupation: req.body.occupation,
+					organisation: req.body.organisation
+				}
+			}
+		);
+		res.status(200).json(user);
+	}
+	catch (err) {
+		res.status(400).json({ message: err.message });
+	}
+});
 
 module.exports = router;
