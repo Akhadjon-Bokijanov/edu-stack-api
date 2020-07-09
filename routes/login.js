@@ -14,14 +14,14 @@ router.use(function(req, res, next) {
 router.post('/', async (req, res) => {
 	try {
 		const user = await User.findOne({ email: req.body.email });
-		if(!user) return res.status(400).send('Invalid email or password.');
+		if(!user) return res.status(400).json({ message: 'Invalid email or password.' });
 
 		const match = await bcrypt.compare(req.body.password, user.password);
 		if(match) {
-			res.status(200).header('x-token', user.genToken()).json(user);
+			res.status(200).header('x-token', user.genToken()).json(_.omit(user, ['password']));
 		}
 		else {
-			res.status(400).send('Invalid email or password.');
+			res.status(400).json({ message: 'Invalid email or password.' });
 		}
 	}
 	catch (err) {
