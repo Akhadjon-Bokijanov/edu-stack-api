@@ -34,6 +34,14 @@ const userSchema = new mongoose.Schema({
 		type: String,
 		default: 'uploads/avatars/default.png'
 	},
+	organisation: {
+		type: String,
+		default: " "
+	},
+	occupation: {
+		type: String,
+		default: 'student'
+	},
 	testScores: [{}]
 });
 
