@@ -19,8 +19,9 @@ const upload = multer({
 
 router.use(function(req, res, next) {
 	res.header("Access-Control-Allow-Origin", "http://localhost:3000"); // update to match the domain you will make the request from
-	res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+	res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, x-token");
 	res.header("Access-Control-Expose-Headers", "x-token" )
+	res.header('Access-Control-Allow-Methods', 'POST, GET, PATCH, DELETE')
 	next();
   });
 
@@ -46,8 +47,12 @@ router.patch('/changePhoto', [auth, upload.any()], async (req, res) => {
 					}
 				});
 			}
+<<<<<<< HEAD
 			let user = new User();
 			user = await User.findOneAndUpdate(
+=======
+			const user = await User.updateOne(
+>>>>>>> bf5aaab73058c79d857380cadf27f29ea4f1e2fc
 				{ _id: req.user._id},
 				{
 					$set: {
