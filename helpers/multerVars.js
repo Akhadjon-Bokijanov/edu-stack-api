@@ -1,8 +1,18 @@
 const multer = require('multer');
 
-const storage = multer.diskStorage({
+const newsStorage = multer.diskStorage({
 	destination: function(req, file, cb) {
 		cb(null, './uploads/newsImages');
+	},
+	filename: function(req, file, cb) {
+		const date = new Date;
+		cb(null, `${ req.user._id }_${ date.getTime()}.${ file.mimetype.split('/')[1] }`);
+	}
+});
+
+const userStorage = multer.diskStorage({
+	destination: function(req, file, cb) {
+		cb(null, './uploads/avatars');
 	},
 	filename: function(req, file, cb) {
 		const date = new Date;
@@ -19,6 +29,7 @@ const fileFilter = (req, file, cb) => {
 };
 
 module.exports = {
-	storage: storage,
+	newsStorage: newsStorage,
+	userStorage: userStorage,
 	fileFilter: fileFilter
 }
