@@ -47,12 +47,7 @@ router.patch('/changePhoto', [auth, upload.any()], async (req, res) => {
 					}
 				});
 			}
-<<<<<<< HEAD
-			let user = new User();
-			user = await User.findOneAndUpdate(
-=======
 			const user = await User.updateOne(
->>>>>>> bf5aaab73058c79d857380cadf27f29ea4f1e2fc
 				{ _id: req.user._id},
 				{
 					$set: {
