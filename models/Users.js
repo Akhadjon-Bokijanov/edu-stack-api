@@ -42,13 +42,22 @@ const userSchema = new mongoose.Schema({
 		type: String,
 		default: 'student'
 	},
-	testScores: [{}]
+	testScores: [{}],
+	dateOfBirth: {
+		type: String
+	},
+	skills: [{}],
+	description: {
+		type: String
+	},
+	vToken: String,
+	contact: String
 });
 
 
 userSchema.methods.genToken = function() {
 	const token = jwt.sign(
-		_.pick(this, ['_id', 'firstName', 'lastName', 'email', 'role', 'address', 'avatar']), 
+		_.pick(this, ['_id', 'firstName', 'lastName', 'email', 'role', 'avatar']), 
 		process.env.jwtPrivateKey);
 	return token;
 }

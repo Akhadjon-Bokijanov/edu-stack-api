@@ -13,7 +13,7 @@ const userSettings = require('./routes/me');
 
 // database connection
 mongoose.connect(
-	process.env.ConnectionString, {autoIndex: false, useNewUrlParser: true});
+	process.env.ConnectionString, {useNewUrlParser: true});
 
 
 // all middleware functions

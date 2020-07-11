@@ -14,16 +14,16 @@ router.use(function(req, res, next) {
 router.post('/', async (req, res) => {
 	try {
 		let user = new User(
-			_.pick(req.body, ['firstName', 'lastName', 'email', 'password', 'role', 'testScores']));
+			_.pick(req.body, ['firstName', 'lastName', 'email', 'password', 'role']));
 		const check = await User.findOne({ email: req.body.email });
 		if(check) {
-			return res.status(400).send('This email already exists.');
+			return res.status(400).json({ message: 'This email already exists.' });
 		}
 
 		const salt = await bcrypt.genSalt(10);
 		user.password = await bcrypt.hash(user.password, salt);
 		const saved = await user.save();
-		res.header('x-token', user.genToken()).json(_.pick(saved, ['firstName', 'lastName', 'email', 'role']));
+		res.header('x-token', user.genToken()).json(_.omit(saved, ['password']));
 	}
 	catch(err) {
 		res.status(400).json( { message: err.message } );

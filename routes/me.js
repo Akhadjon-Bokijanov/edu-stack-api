@@ -43,11 +43,11 @@ router.patch('/changePhoto', [auth, upload.any()], async (req, res) => {
 			if(req.user.avatar !== 'uploads/avatars/default.png') {
 				fs.unlink(req.user.avatar, (err) => {
 					if(err) {
-						throw err;
+						console.log(err);
 					}
 				});
 			}
-			const user = await User.updateOne(
+			const user = await User.findOneAndUpdate(
 				{ _id: req.user._id},
 				{
 					$set: {
@@ -56,6 +56,7 @@ router.patch('/changePhoto', [auth, upload.any()], async (req, res) => {
 				},
 				{ new: true }
 			);
+			console.log(user);
 			res.status(200).header('x-token', user.genToken()).json(_.omit(user.toObject(), ['password']));
 		}
 		else {
@@ -84,7 +85,7 @@ router.patch('/changePassword', auth, async (req, res) => {
 						password: newPassword
 					} 
 				},
-				{ returnOriginal: false }
+				{ new: true }
 			);
 			res.status(200).json(_.omit(changed.toObject(), ['password']));
 		}
