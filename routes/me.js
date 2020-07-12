@@ -104,7 +104,7 @@ router.patch('/changeInfo', auth, async (req, res) => {
 			{ _id: req.user._id },
 			{
 				$set: {
-					firstname: req.body.firstname,
+					firstName: req.body.firstName,
 					lastName: req.body.lastName,
 					address: req.body.address,
 					occupation: req.body.occupation,
