@@ -10,7 +10,7 @@ const { newsStorage, fileFilter } = require('../helpers/multerVars');
 
 
 const upload = multer({ 
-	storage: storage,
+	storage: newsStorage,
 	limits: {
 		fileSize: 1024 * 1024 * 5
 	},
