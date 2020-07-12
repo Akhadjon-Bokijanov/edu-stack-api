@@ -19,11 +19,14 @@ router.post('/', async (req, res) => {
 		if(check) {
 			return res.status(400).json({ message: 'This email already exists.' });
 		}
+		if(req.body.role.toLowerCase() == 'admin') {
+			return res.status(403).json({ message: "Try other ways to become an admin" });
+		}
 
 		const salt = await bcrypt.genSalt(10);
 		user.password = await bcrypt.hash(user.password, salt);
 		const saved = await user.save();
-		res.header('x-token', user.genToken()).json(_.omit(saved, ['password']));
+		res.header('x-token', user.genToken()).json(saved.toJSON());
 	}
 	catch(err) {
 		res.status(400).json( { message: err.message } );

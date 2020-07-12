@@ -6,7 +6,7 @@ const News = require('../models/News');
 const User = require('../models/Users');
 const auth = require('../helpers/auth');
 const { admin, collaborator, newsCreator } = require('../helpers/admin');
-const { storage, fileFilter } = require('../helpers/multerVars');
+const { newsStorage, fileFilter } = require('../helpers/multerVars');
 
 
 const upload = multer({ 
@@ -39,7 +39,7 @@ router.get('/:newsID', async (req, res) => {
 	try {
 		const news = await News.findById(req.params.newsID);
 		if(!news) {
-			return res.status(404).send('News not found.');
+			return res.status(404).json({ message: 'News not found.' });
 		}
 		res.status(200).json(news);
 	}
@@ -48,7 +48,7 @@ router.get('/:newsID', async (req, res) => {
 	}
 });
 
-router.post('/', [auth, upload.any(), collaborator], async (req, res) => {
+router.post('/', [auth, collaborator, upload.any()], async (req, res) => {
 	try {	
 		let news = new News({
 			title: req.body.title,
@@ -59,7 +59,7 @@ router.post('/', [auth, upload.any(), collaborator], async (req, res) => {
 			detail: req.body.detail
 		});
 		if(req.files.length > 0) {
-			news.imageUrl = req.files[0].path;
+			news.imageUrl = req.files[0].path.replace("\\", "/").replace("\\", "/");
 		}
 		news.creatorId = req.user._id;
 		const savedNews = await news.save();
@@ -76,7 +76,9 @@ router.delete('/:newsID', [auth, newsCreator], async (req, res) => {
 		const news = await News.findById(req.params.newsID);
 		if(news.imageUrl !== 'uploads/newsImages/default.png') {
 			fs.unlink(news.imageUrl, (err) => {
-				if(err) throw err;
+				if(err) {
+					console.log(err);
+				}
 			});
 		}	
 		const removed = await News.remove({ _id: req.params.newsID});

@@ -51,13 +51,12 @@ router.patch('/changePhoto', [auth, upload.any()], async (req, res) => {
 				{ _id: req.user._id},
 				{
 					$set: {
-						avatar: req.files[0].path
+						avatar: req.files[0].path.replace("\\", "/").replace("\\", "/")
 					} 
 				},
 				{ new: true }
 			);
-			console.log(user);
-			res.status(200).header('x-token', user.genToken()).json(_.omit(user.toObject(), ['password']));
+			res.status(200).header('x-token', user.genToken()).json(user.toJSON());
 		}
 		else {
 			res.status(400).json({ message: 'No proper image uploaded(allowed image types are: .png, .jpeg, .jpg).' });
@@ -87,7 +86,7 @@ router.patch('/changePassword', auth, async (req, res) => {
 				},
 				{ new: true }
 			);
-			res.status(200).json(_.omit(changed.toObject(), ['password']));
+			res.status(200).json(changed.toJSON());
 		}
 		else {
 			res.status(400).json({ message: 'Invalid password.' });
@@ -109,16 +108,38 @@ router.patch('/changeInfo', auth, async (req, res) => {
 					lastName: req.body.lastName,
 					address: req.body.address,
 					occupation: req.body.occupation,
-					organisation: req.body.organisation
+					organisation: req.body.organisation,
+					contact: req.body.contact,
+					description: req.body.description,
+					dateOfBirth: req.body.dateOfBirth
 				}
 			},
 			{ new: true }
 		);
-		res.status(200).header('x-token', user.genToken()).json(_.omit(user.toObject(), ['password']));
+		res.status(200).header('x-token', user.genToken()).json(user.toJSON());
 	}
 	catch (err) {
 		res.status(400).json({ message: err.message });
 	}
 });
 
-module.exports = router;
+
+router.patch('/changeSkills', auth, async (req, res) => {
+	try {
+		const user = await User.findOneAndUpdate(
+			{ _id: req.user._id },
+			{
+				$set: {
+					skills: req.body.skills
+				}
+			},
+			{ new: true }
+		);
+		res.status(200).json(user.toJSON());
+	}
+	catch (err) {
+		res.status(400).json({ message: err.message });
+	}
+});
+
+module.exports = router; 
