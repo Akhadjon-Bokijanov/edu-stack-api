@@ -20,15 +20,15 @@ const upload = multer({
 router.use(function(req, res, next) {
 	res.header("Access-Control-Allow-Origin", "http://localhost:3000"); // update to match the domain you will make the request from
 	res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, x-token");
-	res.header("Access-Control-Expose-Headers", "x-token" )
-	res.header('Access-Control-Allow-Methods', 'POST, GET, PATCH, DELETE')
+	res.header("Access-Control-Expose-Headers", "x-token" );
+	res.header('Access-Control-Allow-Methods', 'POST, GET, PATCH, DELETE');
 	next();
-  });
+});
 
 
 router.get('/', auth, async (req, res) => {
 	try {
-		const user = await User.findById(req.user._id).select('-password');
+		const user = await User.findById(req.user._id).select('-password').lean();
 		res.status(200).json(user);
 	}
 	catch (err) {

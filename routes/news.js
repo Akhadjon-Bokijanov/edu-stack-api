@@ -5,7 +5,7 @@ const fs = require('fs');
 const News = require('../models/News');
 const User = require('../models/Users');
 const auth = require('../helpers/auth');
-const { admin, collaborator, newsCreator } = require('../helpers/admin');
+const { admin, collaborator, creator } = require('../helpers/admin');
 const { newsStorage, fileFilter } = require('../helpers/multerVars');
 
 
@@ -23,11 +23,11 @@ router.use(function(req, res, next) {
 	res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, x-token");
 	res.header("Access-Control-Allow-Methods", "GET, PATCH, DELETE, POST");
 	next();
-  });
+});
 
 router.get('/', async (req, res) => {
 	try {
-		const news = await News.find().sort({date: -1});
+		const news = await News.find().sort({date: -1}).lean();
 		res.status(200).json(news);
 	}
 	catch(err) {
@@ -37,7 +37,7 @@ router.get('/', async (req, res) => {
 
 router.get('/:newsID', async (req, res) => {
 	try {
-		const news = await News.findById(req.params.newsID);
+		const news = await News.findById(req.params.newsID).lean();
 		if(!news) {
 			return res.status(404).json({ message: 'News not found.' });
 		}
@@ -71,7 +71,7 @@ router.post('/', [auth, collaborator, upload.any()], async (req, res) => {
 	}
 });
 
-router.delete('/:newsID', [auth, newsCreator], async (req, res) => {
+router.delete('/:newsID', [auth, creator], async (req, res) => {
 	try {
 		const news = await News.findById(req.params.newsID);
 		if(news.imageUrl !== 'uploads/newsImages/default.png') {
@@ -89,9 +89,9 @@ router.delete('/:newsID', [auth, newsCreator], async (req, res) => {
 	}
 });
 
-router.patch('/:newsID', [auth, newsCreator], async (req, res) => {
+router.patch('/:newsID', [auth, creator], async (req, res) => {
 	try {
-		const update = await News.updateOne(
+		const update = await News.findOneAndUpdate(
 			{ _id: req.params.newsID},
 			{
 				$set: {
@@ -102,7 +102,8 @@ router.patch('/:newsID', [auth, newsCreator], async (req, res) => {
 					isImportant: req.body.isImportant,
 					detail: req.body.detail
 				} 
-			}
+			},
+			{ new: true }
 		);
 		res.status(200).json(update);
 	}
@@ -113,13 +114,14 @@ router.patch('/:newsID', [auth, newsCreator], async (req, res) => {
 
 router.post('/approve/:newsID', [auth, admin], async (req, res) => {
 	try {
-		const news = await News.updateOne(
+		const news = await News.findOneAndUpdate(
 			{ _id: req.params.newsID},
 			{
 				$set: {
 					status: true
 				} 
-			}
+			},
+			{ new: true }
 		);
 		res.status(200).json(news);
 	}

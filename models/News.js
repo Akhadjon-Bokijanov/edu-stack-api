@@ -29,7 +29,7 @@ const NewsSchema = new mongoose.Schema({
 	status: {
 		type: Boolean,
 		default: false
-	},
+	}, 
 	creatorId: String,
 	detail: {
 		type: String
