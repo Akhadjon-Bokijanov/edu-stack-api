@@ -22,15 +22,29 @@ const resourceSchema = new mongoose.Schema({
 		default: 0
 	},
 	category: {
-		type: String
-		//required: true
+		type: String,
+		default: "Education"
 	},
 	creatorId: String,
 	date: {
 		type: Date,
 		default: Date.now
 	},
-	file: String
+	file: String,
+	rating: {
+		average: {
+			type: Number,
+			default: 0
+		},
+		voters: {
+			type: Number,
+			default: 0
+		}
+	},
+	views: {
+		type: Number,
+		default: 0
+	}
 });
 
 

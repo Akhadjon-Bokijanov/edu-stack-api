@@ -55,6 +55,7 @@ router.post('/', [auth, collaborator, upload.any()], async (req, res) => {
 			title: req.body.title,
 			description: req.body.description,
 			resourceType: req.body.resourceType,
+			category: req.body.category,
 			costType: req.body.costType,
 			cost: req.body.cost,
 			creatorId: req.user._id
@@ -97,7 +98,7 @@ router.patch('/:id', [auth, creator], async (req, res) => {
 
 router.patch('/file/:id', [auth, creator], async (req, res) => {
 	try {
-		if(req.files.length == 1) {
+		if(req.files.length === 1) {
 			fs.exists(req.body.file, (exists) => {
 				if(exists) {
 					fs.unlink(req.body.file, (err) => {
