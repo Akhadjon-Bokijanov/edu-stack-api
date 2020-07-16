@@ -23,7 +23,7 @@ const resourceSchema = new mongoose.Schema({
 	},
 	category: {
 		type: String,
-		default: "Education"
+		default: "Other"
 	},
 	creatorId: {
 		type: mongoose.ObjectId,
