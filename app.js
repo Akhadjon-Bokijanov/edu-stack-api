@@ -12,7 +12,6 @@ const loginRoute = require('./routes/login');
 const userSettings = require('./routes/me');
 const usersRoute = require('./routes/allUsers');
 const resourcesRoute = require('./routes/resources');
-const test = require('./routes/test');
 
 // database connection
 mongoose.connect(
@@ -36,7 +35,6 @@ app.use('/ES/api/login', loginRoute);
 app.use('/ES/api/me', userSettings);
 app.use('/ES/api/users', usersRoute);
 app.use('/ES/api/resources', resourcesRoute);
-app.use('/', test);
 
 
-app.listen(process.env.PORT || 3000);
+app.listen(4000);

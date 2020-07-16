@@ -8,6 +8,7 @@ const { admin, collaborator, creator } = require('../helpers/admin');
 const User = require('../models/Users');
 const Resource = require('../models/Resources');
 const { resourceFilter, resourceStorage } = require('../helpers/multerVars');
+const { bSearch } = require('../helpers/customFuncs');
 
 const upload = multer({
 	storage: resourceStorage,
@@ -28,7 +29,7 @@ router.use(function(req, res, next) {
 
 router.get('/', auth, async (req, res) => {
 	try {
-		const resourses = await Resource.find().lean();
+		const resourses = await Resource.find().populate('creatorId', 'firstName lastName avatar').lean();
 		res.status(200).json(resourses);
 	}
 	catch (err) {
@@ -38,7 +39,7 @@ router.get('/', auth, async (req, res) => {
 
 router.get('/:id', auth, async (req, res) => {
 	try {
-		const resourse = await Resource.findById(req.params.id).lean();
+		const resourse = await Resource.findById(req.params.id).populate('creatorId', 'firstName lastName avatar').lean();
 		if(!resourse) {
 			return res.status(404).json({ message: "Resource not found." });
 		}
@@ -143,6 +144,39 @@ router.delete('/:id', [auth, creator], async (req, res) => {
 		});
 		const removed = await Resource.remove({ _id: req.params.id });
 		res.status(200).json(removed);	
+	}
+	catch (err) {
+		res.status(400).json({ message: err.message });
+	}
+});
+
+router.patch('/rate/:id', auth, async (req, res) => {
+	try {
+		let resourse = await Resource.findOne({ _id: req.params.id })
+			.select("rating +ratedUsers")
+			.sort({ratedUsers: 1}).lean();
+		const isRated = bSearch(resourse.ratedUsers, req.user._id);
+		if(isRated) {
+			return res.status(400).json({ message: "You have already rated this resourse." });
+		}
+		else {
+			const average = resourse.rating.average;
+			const users = resourse.rating.voters;
+			const updated = await Resource.findOneAndUpdate(
+				{ _id: req.params.id },
+				{
+					$set: {
+						"rating.average": (average * users + req.body.rating) / (users + 1),
+						"rating.voters": users + 1
+					},
+					$push: {
+						ratedUsers: req.user._id
+					}
+				},
+				{ new: true }
+			);
+			res.status(200).json(updated);
+		}
 	}
 	catch (err) {
 		res.status(400).json({ message: err.message });

@@ -25,7 +25,10 @@ const resourceSchema = new mongoose.Schema({
 		type: String,
 		default: "Education"
 	},
-	creatorId: String,
+	creatorId: {
+		type: mongoose.ObjectId,
+		ref: 'Users'
+	},
 	date: {
 		type: Date,
 		default: Date.now
@@ -44,6 +47,14 @@ const resourceSchema = new mongoose.Schema({
 	views: {
 		type: Number,
 		default: 0
+	},
+	ratedUsers: {
+		type: [String],
+		select: false
+	},
+	viewedUsers: {
+		type: [String],
+		select: false
 	}
 });
 
