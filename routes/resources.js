@@ -8,7 +8,6 @@ const { admin, collaborator, creator } = require('../helpers/admin');
 const User = require('../models/Users');
 const Resource = require('../models/Resources');
 const { resourceFilter, resourceStorage } = require('../helpers/multerVars');
-const { bSearch } = require('../helpers/customFuncs');
 
 const upload = multer({
 	storage: resourceStorage,
@@ -85,8 +84,8 @@ router.patch('/:id', [auth, creator], async (req, res) => {
 					description: req.body.description,
 					resourceType: req.body.resourceType,
 					costType: req.body.costType,
-					cost: req.body.cost,
 					category: req.body.category,
+					cost: req.body.cost
 				}
 			},
 			{ new: true }
@@ -153,10 +152,9 @@ router.delete('/:id', [auth, creator], async (req, res) => {
 router.patch('/rate/:id', auth, async (req, res) => {
 	try {
 		let resourse = await Resource.findOne({ _id: req.params.id })
-			.select("rating +ratedUsers")
-			.sort({ratedUsers: 1}).lean();
-		const isRated = bSearch(resourse.ratedUsers, req.user._id);
-		if(isRated) {
+			.select("rating +ratedUsers").lean();
+		
+		if(resourse.ratedUsers.includes(req.user._id)) {
 			return res.status(400).json({ message: "You have already rated this resourse." });
 		}
 		else {
@@ -170,7 +168,10 @@ router.patch('/rate/:id', auth, async (req, res) => {
 						"rating.voters": users + 1
 					},
 					$push: {
-						ratedUsers: req.user._id
+						ratedUsers: {
+							user: req.user._id,
+							rating: req.body.rating
+						}
 					}
 				},
 				{ new: true }
@@ -179,6 +180,23 @@ router.patch('/rate/:id', auth, async (req, res) => {
 		}
 	}
 	catch (err) {
+		res.status(400).json({ message: err.message });
+	}
+});
+
+router.get('/rating/:userId/:resourceId', auth, async (req, res) => {
+	try {
+		const rating = await Resource.findOne({ _id: req.params.resourceId, 'ratedUsers.user': req.params.userId })
+			.select("_id +ratedUsers").lean();
+		console.log(rating);
+		if(!rating) {
+			res.status(200).json({ rating: 0 });
+		}
+		else {
+			res.status(200).json({ rating: rating[0].rating });
+		}
+	}	
+	catch(err) {
 		res.status(400).json({ message: err.message });
 	}
 });

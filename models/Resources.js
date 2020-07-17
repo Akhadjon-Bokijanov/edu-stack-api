@@ -49,7 +49,7 @@ const resourceSchema = new mongoose.Schema({
 		default: 0
 	},
 	ratedUsers: {
-		type: [String],
+		type: [{}],
 		select: false
 	},
 	viewedUsers: {
