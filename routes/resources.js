@@ -85,13 +85,8 @@ router.patch('/:id', [auth, creator], async (req, res) => {
 					description: req.body.description,
 					resourceType: req.body.resourceType,
 					costType: req.body.costType,
-<<<<<<< HEAD
-					category: req.body.category,
-					cost: req.body.cost
-=======
 					cost: req.body.cost,
 					category: req.body.category,
->>>>>>> 101e8153d06b42249b880fd000c56211c11d707f
 				}
 			},
 			{ new: true }
