@@ -154,7 +154,7 @@ router.patch('/rate/:id', auth, async (req, res) => {
 		let resourse = await Resource.findOne({ _id: req.params.id })
 			.select("rating +ratedUsers").lean();
 		
-		if(resourse.ratedUsers.includes(req.user._id)) {
+		if(resourse.ratedUsers.some(r => r.user === req.user._id)) {
 			return res.status(400).json({ message: "You have already rated this resourse." });
 		}
 		else {
@@ -197,6 +197,18 @@ router.get('/rating/:userId/:resourceId', auth, async (req, res) => {
 		}
 	}	
 	catch(err) {
+		res.status(400).json({ message: err.message });
+	}
+});
+
+
+router.get('/download/:file', async (req, res) => {
+	try {
+		const file = req.params.file;
+		const mime = file.split('.')[1];
+		res.download(`uploads/resources/${file}`, `EduStack.${mime}`);
+	}
+	catch (err) {
 		res.status(400).json({ message: err.message });
 	}
 });
