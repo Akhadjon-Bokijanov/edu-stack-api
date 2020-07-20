@@ -28,7 +28,7 @@ router.use(function(req, res, next) {
 
 router.get('/', auth, async (req, res) => {
 	try {
-		const resourses = await Resource.find().populate('creatorId', 'firstName lastName avatar').lean();
+		const resourses = await Resource.find().lean();
 		res.status(200).json(resourses);
 	}
 	catch (err) {
@@ -38,7 +38,7 @@ router.get('/', auth, async (req, res) => {
 
 router.get('/:id', auth, async (req, res) => {
 	try {
-		const resourse = await Resource.findById(req.params.id).populate('creatorId', 'firstName lastName avatar').lean();
+		const resourse = await Resource.findById(req.params.id).lean();
 		if(!resourse) {
 			return res.status(404).json({ message: "Resource not found." });
 		}
@@ -58,10 +58,16 @@ router.post('/', [auth, collaborator, upload.any()], async (req, res) => {
 			category: req.body.category,
 			costType: req.body.costType,
 			cost: req.body.cost,
-			creatorId: req.user._id
+			creator: {
+				_id: req.user._id,
+				fullName: `${req.user.firstName} ${req.user.lastName}`,
+				avatar: req.user.avatar
+			}
 		});
 		if(req.files.length === 1) {
-			resourse.file = req.files[0].path.replace("\\", "/").replace("\\", "/");
+			resourse.file.fileName = req.files[0].filename.split('.')[0];
+			resourse.file.fileType = req.files[0].originalname.split('.').slice(-1)[0];
+			resourse.file.fileSize = req.files[0].size;
 			const saved = await resourse.save();
 			res.status(200).json(saved);
 		}
@@ -114,7 +120,9 @@ router.patch('/file/:id', [auth, creator], async (req, res) => {
 				{ _id: req.params.id },
 				{
 					$set: {
-						file: req.files[0].path.replace('\\', '/').replace('\\', '/')
+						'file.filename': req.files[0].filename.split('.')[0],
+						'file.fileType': req.files[0].originalname.split('.').slice(-1)[0],
+						'file.fileSize': req.files[0].size
 					}
 				},
 				{ new: true }
@@ -204,9 +212,9 @@ router.get('/rating/:userId/:resourceId', auth, async (req, res) => {
 
 router.get('/download/:file', async (req, res) => {
 	try {
-		const file = req.params.file;
-		const mime = file.split('.')[1];
-		res.download(`uploads/resources/${file}`, `EduStack.${mime}`);
+		const file = req.params.fileName;
+		const mime = req.params.fileType;
+		res.download(`uploads/resources/${file}.${mime}`, `EduStack.${mime}`);
 	}
 	catch (err) {
 		res.status(400).json({ message: err.message });

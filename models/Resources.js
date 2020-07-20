@@ -25,15 +25,20 @@ const resourceSchema = new mongoose.Schema({
 		type: String,
 		default: "Other"
 	},
-	creatorId: {
-		type: mongoose.ObjectId,
-		ref: 'Users'
+	creator: {
+		_id: String,
+		fullName: String,
+		avatar: String
 	},
 	date: {
 		type: Date,
 		default: Date.now
 	},
-	file: String,
+	file: {
+		fileName: String,
+		fileType: String,
+		fileSize: String
+	},
 	rating: {
 		average: {
 			type: Number,
