@@ -211,7 +211,7 @@ router.get('/rating/:userId/:resourceId', auth, async (req, res) => {
 			res.status(200).json({ rating: 0 });
 		}
 		else {
-			res.status(200).json({ rating: rating[0].rating });
+			res.status(200).json({ rating: rating.ratedUsers[0].rating });
 		}
 	}	
 	catch(err) {
