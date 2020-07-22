@@ -28,6 +28,16 @@ router.use(function(req, res, next) {
 
 router.get('/', auth, async (req, res) => {
 	try {
+		const resourses = await Resource.find({ resourceType: 'public' }).lean();
+		res.status(200).json(resourses);
+	}
+	catch (err) {
+		res.status(400).json({ message: err.message });
+	}
+});
+
+router.get('/all', [auth, admin], async (req, res) => {
+	try {
 		const resourses = await Resource.find().lean();
 		res.status(200).json(resourses);
 	}
@@ -212,9 +222,10 @@ router.get('/rating/:userId/:resourceId', auth, async (req, res) => {
 
 router.get('/download/:file', async (req, res) => {
 	try {
-		const file = req.params.fileName;
-		const mime = req.params.fileType;
-		res.download(`uploads/resources/${file}.${mime}`, `EduStack.${mime}`);
+		const file = req.params.file;
+		const title = req.body.title.replace('/\s/g', '_');
+		const mime = req.body.fileType;
+		res.download(`uploads/resources/${file}.${mime}`, `EduStack_${title}.${mime}`);
 	}
 	catch (err) {
 		res.status(400).json({ message: err.message });
