@@ -44,14 +44,23 @@ const userSchema = new mongoose.Schema({
 	},
 	testScores: [{}],
 	dateOfBirth: {
-		type: String
+		type: String,
+		default: null
 	},
 	skills: [{}],
 	description: {
 		type: String
 	},
 	vToken: String,
-	contact: String
+	contact: String,
+	registeredDate: {
+		type: Date,
+		default: Date.now
+	},
+	reputation: {
+		type: Number,
+		default: 0
+	}
 });
 
 
