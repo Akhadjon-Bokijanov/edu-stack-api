@@ -220,14 +220,16 @@ router.get('/rating/:userId/:resourceId', auth, async (req, res) => {
 });
 
 
-router.get('/download/:file', async (req, res) => {
+router.post('/download/:file', async (req, res) => {
+	console.log(req.body)
 	try {
 		const file = req.params.file;
 		const title = req.body.title.replace('/\s/g', '_');
 		const mime = req.body.fileType;
-		res.download(`uploads/resources/${file}.${mime}`, `EduStack_${title}.${mime}`);
+		res.download(`uploads/resources/${file}.${mime}`, `EduStack.uz_${title}.${mime}`);
 	}
 	catch (err) {
+		console.log(err.message)
 		res.status(400).json({ message: err.message });
 	}
 });
