@@ -204,7 +204,7 @@ router.patch('/rate/:id', auth, async (req, res) => {
 
 router.get('/rating/:userId/:resourceId', auth, async (req, res) => {
 	try {
-		const rating = await Resource.findOne({ _id: req.params.resourceId, 'ratedUsers.user': req.params.userId })
+		const rating = await Resource.findOne({ _id: req.params.resourceId }, { ratedUsers: { $elemMatch: { user: req.params.userId } } })
 			.select("_id +ratedUsers").lean();
 		console.log(rating);
 		if(!rating) {

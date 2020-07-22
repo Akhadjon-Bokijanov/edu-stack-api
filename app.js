@@ -36,5 +36,4 @@ app.use('/ES/api/me', userSettings);
 app.use('/ES/api/users', usersRoute);
 app.use('/ES/api/resources', resourcesRoute);
 
-
 app.listen(4000);
