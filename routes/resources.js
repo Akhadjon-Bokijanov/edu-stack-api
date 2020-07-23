@@ -225,7 +225,11 @@ router.get('/download/:file/:mime/:title', async (req, res) => {
 		const file = req.params.file;
 		const title = req.params.title;
 		const mime = req.params.mime;
-		res.download(`uploads/resources/${file}.${mime}`, `EduStackuz_${title}.${mime}`);
+		res.header({
+			'Content-Disposition': "attachment;filename=EduStackuz.pdf",
+			'Content-Type': "application/pdf"
+		})
+			.download(`uploads/resources/${file}.${mime}`, `EduStackuz_${title}.${mime}`);
 	}
 	catch (err) {
 		res.status(400).json({ message: err.message });
