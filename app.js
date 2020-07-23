@@ -12,13 +12,16 @@ const loginRoute = require('./routes/login');
 const userSettings = require('./routes/me');
 const usersRoute = require('./routes/allUsers');
 const resourcesRoute = require('./routes/resources');
+const questionsRoute = require('./routes/questions');
 
 // database connection
 mongoose.connect(
 	process.env.ConnectionString, 
 	{
 		useUnifiedTopology: true, 
-		useNewUrlParser: true
+		useNewUrlParser: true,
+		useFindAndModify: false,
+		useCreateIndex: true
 	}
 );
 
@@ -35,5 +38,6 @@ app.use('/ES/api/login', loginRoute);
 app.use('/ES/api/me', userSettings);
 app.use('/ES/api/users', usersRoute);
 app.use('/ES/api/resources', resourcesRoute);
+app.use('/ES/api/questions', questionsRoute);
 
 app.listen(4000);

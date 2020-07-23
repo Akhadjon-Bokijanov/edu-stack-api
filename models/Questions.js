@@ -5,6 +5,7 @@ const questionSchema = new mongoose.Schema({
 		type: String,
 		required: true
 	},
+	description: String,
 	creator: {
 		_id: String,
 		fullName: String,
@@ -13,21 +14,21 @@ const questionSchema = new mongoose.Schema({
 	answers: {
 		type: [{}]
 	},
-	views: {
-		type: Number,
-		default: 0
-	},
-	likes: {
-		type: Number,
-		default: 0
-	},
-	category: {
-		type: String,
+	categories: {
+		type: [String],
 		required: true
 	},
 	isAnswered: {
 		type: Boolean,
 		default: false
+	},
+	date: {
+		type: Date,
+		default: Date.now
+	},
+	updatedAt: {
+		type: Date,
+		default: Date.now
 	}
 });
 

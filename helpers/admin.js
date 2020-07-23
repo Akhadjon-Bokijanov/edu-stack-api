@@ -17,6 +17,15 @@ function collaborator(req, res, next) {
 }
 
 function creator(req, res, next) {
+	if(req.user.role.toLowerCase() === 'admin' || req.user._id === req.body.creator._id) {
+		next();
+	}
+	else {
+		return res.status(403).json({ message: 'Access denied.' });
+	}
+}
+
+function newsCreator(req, res, next) {
 	if(req.user.role.toLowerCase() == 'admin' || req.user._id == req.body.creatorId) {
 		next();
 	}
@@ -28,5 +37,6 @@ function creator(req, res, next) {
 module.exports = {
 	admin: admin,
 	collaborator: collaborator,
-	creator: creator
+	creator: creator,
+	newsCreator: newsCreator
 };

@@ -28,8 +28,20 @@ router.use(function(req, res, next) {
 
 router.get('/', auth, async (req, res) => {
 	try {
-		const resourses = await Resource.find({ resourceType: 'public' }).lean();
-		res.status(200).json(resourses);
+		const resources = await Resource.find({ resourceType: 'public' })
+			.limit(50).sort({ date: -1 }).lean();
+		res.status(200).json(resources);
+	}
+	catch (err) {
+		res.status(400).json({ message: err.message });
+	}
+});
+
+router.get('/:category', auth, async (req, res) => {
+	try {
+		const resources = await Resource.find({ resourceType: 'public', category: req.params.category })
+			.sort({ date: -1 }).lean();
+		res.status(200).json(resources);
 	}
 	catch (err) {
 		res.status(400).json({ message: err.message });
@@ -38,8 +50,8 @@ router.get('/', auth, async (req, res) => {
 
 router.get('/all', [auth, admin], async (req, res) => {
 	try {
-		const resourses = await Resource.find().lean();
-		res.status(200).json(resourses);
+		const resources = await Resource.find().sort({ date: -1 }).lean();
+		res.status(200).json(resources);
 	}
 	catch (err) {
 		res.status(400).json({ message: err.message });
@@ -48,11 +60,11 @@ router.get('/all', [auth, admin], async (req, res) => {
 
 router.get('/:id', auth, async (req, res) => {
 	try {
-		const resourse = await Resource.findById(req.params.id).lean();
-		if(!resourse) {
+		const resource = await Resource.findById(req.params.id).lean();
+		if(!resource) {
 			return res.status(404).json({ message: "Resource not found." });
 		}
-		res.status(200).json(resourse);
+		res.status(200).json(resource);
 	} 
 	catch (err) {
 		res.status(400).json({ message: err.message });
@@ -61,7 +73,7 @@ router.get('/:id', auth, async (req, res) => {
 
 router.post('/', [auth, collaborator, upload.any()], async (req, res) => {
 	try {
-		let resourse = new Resource({
+		let resource = new Resource({
 			title: req.body.title,
 			description: req.body.description,
 			resourceType: req.body.resourceType,
@@ -75,10 +87,10 @@ router.post('/', [auth, collaborator, upload.any()], async (req, res) => {
 			}
 		});
 		if(req.files.length === 1) {
-			resourse.file.fileName = req.files[0].filename.split('.')[0];
-			resourse.file.fileType = req.files[0].originalname.split('.').slice(-1)[0];
-			resourse.file.fileSize = req.files[0].size;
-			const saved = await resourse.save();
+			resource.file.fileName = req.files[0].filename.split('.')[0];
+			resource.file.fileType = req.files[0].originalname.split('.').slice(-1)[0];
+			resource.file.fileSize = req.files[0].size;
+			const saved = await resource.save();
 			res.status(200).json(saved);
 		}
 		else {
@@ -116,13 +128,17 @@ router.patch('/:id', [auth, creator], async (req, res) => {
 router.patch('/file/:id', [auth, creator], async (req, res) => {
 	try {
 		if(req.files.length === 1) {
-			fs.exists(req.body.file, (exists) => {
+			const path = `uploads/resources/${req.body.fileName}.${req.body.fileType}`.toString();
+			fs.exists(path, (exists) => {
 				if(exists) {
-					fs.unlink(req.body.file, (err) => {
+					fs.unlink(path, (err) => {
 						if(err) {
 							console.log(err);
 						}
 					});
+				}
+				else {
+					return res.status(404).json({ message: "File is not found." });
 				}
 			});
 
@@ -137,7 +153,7 @@ router.patch('/file/:id', [auth, creator], async (req, res) => {
 				},
 				{ new: true }
 			);
-			res.status(200).json(update);
+			res.status(200).json({ success: true });
 		}
 		else {
 			res.status(400).json({ message: "Only one file required." });
@@ -150,16 +166,20 @@ router.patch('/file/:id', [auth, creator], async (req, res) => {
 
 router.delete('/:id', [auth, creator], async (req, res) => {
 	try {
-		fs.exists(req.body.file, (exists) => {
+		const path = `uploads/resources/${req.body.fileName}.${req.body.fileType}`.toString();
+		fs.exists(path, (exists) => {
 			if(exists) {
-				fs.unlink(req.body.file, (err) => {
+				fs.unlink(path, (err) => {
 					if(err) {
 						console.log(err);
 					}
 				});
 			}
+			else {
+				return res.status(404).json({ message: "File is not found." });
+			}
 		});
-		const removed = await Resource.remove({ _id: req.params.id });
+		const removed = await Resource.deleteOne({ _id: req.params.id });
 		res.status(200).json(removed);	
 	}
 	catch (err) {
