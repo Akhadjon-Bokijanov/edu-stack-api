@@ -5,7 +5,7 @@ const fs = require('fs');
 const News = require('../models/News');
 const User = require('../models/Users');
 const auth = require('../helpers/auth');
-const { admin, collaborator, creator } = require('../helpers/admin');
+const { admin, collaborator, newsCreator } = require('../helpers/admin');
 const { newsStorage, fileFilter } = require('../helpers/multerVars');
 
 
@@ -71,7 +71,7 @@ router.post('/', [auth, collaborator, upload.any()], async (req, res) => {
 	}
 });
 
-router.delete('/:newsID', [auth, creator], async (req, res) => {
+router.delete('/:newsID', [auth, newsCreator], async (req, res) => {
 	try {
 		const news = await News.findById(req.params.newsID);
 		if(news.imageUrl !== 'uploads/newsImages/default.png') {
@@ -81,7 +81,7 @@ router.delete('/:newsID', [auth, creator], async (req, res) => {
 				}
 			});
 		}	
-		const removed = await News.remove({ _id: req.params.newsID});
+		const removed = await News.deleteOne({ _id: req.params.newsID});
 		res.status(200).json(removed);
 	}
 	catch(err) {
@@ -89,7 +89,7 @@ router.delete('/:newsID', [auth, creator], async (req, res) => {
 	}
 });
 
-router.patch('/:newsID', [auth, creator], async (req, res) => {
+router.patch('/:newsID', [auth, newsCreator], async (req, res) => {
 	try {
 		const update = await News.findOneAndUpdate(
 			{ _id: req.params.newsID},
