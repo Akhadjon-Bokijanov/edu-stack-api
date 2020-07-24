@@ -60,6 +60,15 @@ const userSchema = new mongoose.Schema({
 	reputation: {
 		type: Number,
 		default: 0
+	},
+	wishList: {
+		type: [{}]
+	},
+	cartList: {
+		type: [{}]
+	},
+	background: {
+		type: [{}]
 	}
 });
 

@@ -159,7 +159,6 @@ router.patch('/like/:questionId/:answerId', auth, async (req, res) => {
 	try {
 		const answer = await Question.findOne({ _id: req.params.questionId })
 			.select({ answers: { $elemMatch: { _id: req.params.answerId } } });
-		console.log(answer);
 		if(answer.answers.length === 0) {
 			return res.status(404).json({ message: 'Answer is not found.' });
 		}
