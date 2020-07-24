@@ -13,9 +13,17 @@ router.use(function(req, res, next) {
 	next();
 });
 
+router.use(function(req, res, next) {
+	res.header("Access-Control-Allow-Origin", "http://localhost:3000"); // update to match the domain you will make the request from
+	res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, x-token");
+	res.header("Access-Control-Allow-Methods", "GET, PATCH, DELETE, POST");
+	next();
+});
+
+
 router.get('/', async (req, res) => {
 	try {
-		const questions = await Question.find().limit(50).lean();
+		const questions = await Question.find().limit(50).sort({ updatedAt: -1 }).lean();
 		res.status(200).json(questions);
 	}
 	catch (err) {
@@ -23,9 +31,9 @@ router.get('/', async (req, res) => {
 	}
 });
 
-router.get('/:category', async (req, res) => {
+router.get('/category/:category', async (req, res) => {
 	try {
-		const questions = await Question.find({category: req.params.category}).lean();
+		const questions = await Question.find({categories: { $elemMatch: {$eq: req.params.category} }}).lean();
 		res.status(200).json(questions);
 	}
 	catch (err) {
@@ -35,7 +43,12 @@ router.get('/:category', async (req, res) => {
 
 router.get('/:id', async (req, res) => {
 	try {
-		const question = await Question.findById(req.params.id).lean();
+		console.log(req.params.id);
+		console.log(typeof req.params.id);
+		const question = await Question.findOne({ _id: req.params.id }).lean();
+		if(!question) {
+			return res.status(404).json({ message: 'Question is not found.' });
+		}
 		res.status(200).json(question);
 	}
 	catch (err) {
@@ -72,6 +85,8 @@ router.patch('/:id', [auth, creator], async (req, res) => {
 			{
 				$set: {
 					question: req.body.question,
+					description: req.body.description,
+					categories: req.body.categories,
 					updatedAt: new Date()
 				}
 			},
@@ -202,6 +217,23 @@ router.patch('/removeanswer/:questionId/:answerId', [auth, creator], async (req,
 					answers: {
 						_id: req.params.answerId
 					}
+				}
+			}
+		);
+		res.status(200).json({ success: true });
+	}
+	catch (err) {
+		res.status(400).json({ message: err.message });
+	}
+});
+
+router.patch('/answered/:id', [auth, creator], async (req, res) => {
+	try {
+		await Question.findOneAndUpdate(
+			{ _id: req.params.id },
+			{
+				$set: {
+					isAnswered: true
 				}
 			}
 		);
