@@ -27,7 +27,8 @@ router.use(function(req, res, next) {
 
 router.get('/', async (req, res) => {
 	try {
-		const news = await News.find().sort({date: -1}).lean();
+		const d = new Date();
+		const news = await News.find({ date: { $gte: d.setDate(d.getDate()-30) } }).sort({date: -1}).lean();
 		res.status(200).json(news);
 	}
 	catch(err) {
@@ -112,7 +113,7 @@ router.patch('/:newsID', [auth, newsCreator], async (req, res) => {
 	}
 });
 
-router.post('/approve/:newsID', [auth, admin], async (req, res) => {
+router.patch('/approve/:newsID', [auth, admin], async (req, res) => {
 	try {
 		const news = await News.findOneAndUpdate(
 			{ _id: req.params.newsID},

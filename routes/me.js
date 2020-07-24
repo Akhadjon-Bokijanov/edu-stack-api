@@ -4,7 +4,10 @@ const multer = require('multer');
 const _ = require('lodash');
 const fs = require('fs');
 const bcrypt = require('bcrypt');
+
 const User = require('../models/Users');
+const Resource = require('../models/Resources');
+const Question = require('../models/Questions');
 const auth = require('../helpers/auth');
 const { userStorage, fileFilter } = require('../helpers/multerVars');
 
@@ -28,7 +31,7 @@ router.use(function(req, res, next) {
 
 router.get('/', auth, async (req, res) => {
 	try {
-		const user = await User.findById(req.user._id).select('-password').lean();
+		const user = await User.findById(req.user._id).select('-password -').lean();
 		res.status(200).json(user);
 	}
 	catch (err) {
@@ -123,6 +126,22 @@ router.patch('/changeInfo', auth, async (req, res) => {
 	}
 });
 
+router.patch('/changeBackground', auth, async (req, res) => {
+	try {
+		await User.findOneAndUpdate(
+			{ _id: req.user._id },
+			{
+				$set: {
+					background: req.body.background
+				}
+			}
+		);
+		res.status(200).json({ success: true });
+	}
+	catch (err) {
+		res.status(400).json({ message: err.message });
+	}
+});
 
 router.patch('/changeSkills', auth, async (req, res) => {
 	try {
@@ -136,6 +155,26 @@ router.patch('/changeSkills', auth, async (req, res) => {
 			{ new: true }
 		);
 		res.status(200).json(user.toJSON());
+	}
+	catch (err) {
+		res.status(400).json({ message: err.message });
+	}
+});
+
+router.get('/myresources', auth, async (req, res) => {
+	try {
+		const resources = await Resource.find({ 'creator._id': req.user._id }).sort({ date: -1 }).lean();
+		res.status(200).json(resources);
+	}
+	catch (err) {
+		res.status(400).json({ message: err.message });
+	}
+});
+
+router.get('/myquestions', auth, async (req, res) => {
+	try {
+		const questions = await Question.find({ 'creator._id': req.user._id }).sort({ date: -1 }).lean();
+		res.status(200).json(questions);
 	}
 	catch (err) {
 		res.status(400).json({ message: err.message });
