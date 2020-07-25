@@ -237,5 +237,14 @@ router.patch('/answered/:id', [auth, creator], async (req, res) => {
 	}
 });
 
+router.get('/search/:text', async (req, res) => {
+	try {	
+		const search = await Question.find({ $text: { $search: req.params.text } }).lean();
+		res.status(200).json(search);
+	}
+	catch (err) {
+		res.status(400).json({ message: err.message });
+	}
+});
 
 module.exports = router;

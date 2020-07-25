@@ -49,6 +49,16 @@ router.get('/:newsID', async (req, res) => {
 	}
 });
 
+router.get('/test/:text', (req, res) => {
+	try {
+		console.log(req.params.text);
+		res.send(req.params.text);
+	}
+	catch(err) {
+		res.send(err.message);
+	}
+});
+
 router.post('/', [auth, collaborator, upload.any()], async (req, res) => {
 	try {	
 		let news = new News({
