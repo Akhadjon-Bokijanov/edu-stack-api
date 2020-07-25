@@ -240,7 +240,7 @@ router.get('/rating/:userId/:resourceId', auth, async (req, res) => {
 });
 
 
-router.get('/download/:file/:mime/:title', async (req, res) => {
+router.get('/download/:file/:mime/:title', auth, async (req, res) => {
 	try {
 		const file = req.params.file;
 		const title = req.params.title;
