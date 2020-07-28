@@ -69,7 +69,9 @@ const userSchema = new mongoose.Schema({
 	},
 	background: {
 		type: [{}]
-	}
+	},
+	followers: Array,
+	following: Array
 });
 
 

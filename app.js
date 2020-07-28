@@ -13,6 +13,8 @@ const userSettings = require('./routes/me');
 const usersRoute = require('./routes/allUsers');
 const resourcesRoute = require('./routes/resources');
 const questionsRoute = require('./routes/questions');
+const blogRoute = require('./routes/blogs');
+const surveyRoute = require('./routes/surveys');
 
 // database connection
 mongoose.connect(
@@ -39,6 +41,8 @@ app.use('/ES/api/me', userSettings);
 app.use('/ES/api/users', usersRoute);
 app.use('/ES/api/resources', resourcesRoute);
 app.use('/ES/api/questions', questionsRoute);
+app.use('/ES/api/blogs', blogRoute);
+app.use('/ES/api/surveys', surveyRoute);
 
 
 app.listen(4000);

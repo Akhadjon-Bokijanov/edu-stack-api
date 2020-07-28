@@ -128,15 +128,16 @@ router.patch('/changeInfo', auth, async (req, res) => {
 
 router.patch('/changeBackground', auth, async (req, res) => {
 	try {
-		await User.findOneAndUpdate(
+		const update = await User.findOneAndUpdate(
 			{ _id: req.user._id },
 			{
 				$set: {
 					background: req.body.background
 				}
-			}
+			},
+			{ new: true }
 		);
-		res.status(200).json({ success: true });
+		res.status(200).json(update);
 	}
 	catch (err) {
 		res.status(400).json({ message: err.message });
@@ -175,6 +176,66 @@ router.get('/myquestions', auth, async (req, res) => {
 	try {
 		const questions = await Question.find({ 'creator._id': req.user._id }).sort({ date: -1 }).lean();
 		res.status(200).json(questions);
+	}
+	catch (err) {
+		res.status(400).json({ message: err.message });
+	}
+});
+
+router.post('/follow', auth, async (req, res) => {
+	try {
+		const { follower, following, action } = req.body;
+
+		if(!(req.user._id === follower || req.user._id === following)) {
+			return res.status(403).json({ message: 'You are not allowed.' });
+		}
+		if(action === 'follow' && req.user._id !== follower) {
+			return res.status(403).json({ message: 'You are not allowed.' });
+		}
+		
+		const userInfo = await User.findById(req.user._id).select('followers following').lean();
+		if(action === 'follow' && userInfo.following.includes(following)) {
+			return res.status(400).json({ message: 'You are already following this user' });
+		}
+		if(following === follower) {
+			return res.status(400).json({ message: 'You can\'t (un)follow yourself.' });
+		}
+
+		switch(action) {
+			case 'follow':
+				await Promise.all([
+					User.findByIdAndUpdate(follower, {
+						$push: {
+							following: following
+						}
+					}),
+					User.findByIdAndUpdate(following, {
+						$push: {
+							followers: follower
+						}
+					})
+				]);
+				break;
+
+			case 'unfollow':
+				await Promise.all([
+					User.findByIdAndUpdate(follower, {
+						$pull: {
+							following: following
+						}
+					}),
+					User.findByIdAndUpdate(following, {
+						$pull: {
+							followers: follower
+						}
+					})
+				]);
+				break;
+
+			default: 
+				break;
+		}
+		res.status(200).json({ success: true });
 	}
 	catch (err) {
 		res.status(400).json({ message: err.message });

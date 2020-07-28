@@ -6,12 +6,6 @@ const User = require('../models/Users');
 const Question = require('../models/Questions');
 const { admin, collaborator, creator } = require('../helpers/admin');
 
-router.use(function(req, res, next) {
-	res.header("Access-Control-Allow-Origin", "http://localhost:3000"); // update to match the domain you will make the request from
-	res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, x-token");
-	res.header("Access-Control-Allow-Methods", "GET, PATCH, DELETE, POST");
-	next();
-});
 
 router.use(function(req, res, next) {
 	res.header("Access-Control-Allow-Origin", "http://localhost:3000"); // update to match the domain you will make the request from
@@ -163,7 +157,7 @@ router.patch('/answer/:questionId/:answerId', [auth, creator], async (req, res) 
 
 router.patch('/like/:questionId/:answerId', auth, async (req, res) => {
 	try {
-		const answer = await Question.findOne({ _id: req.params.questionId })
+		const answer = await Question.findById(req.params.questionId)
 			.select({ answers: { $elemMatch: { _id: req.params.answerId } } });
 		if(answer.answers.length === 0) {
 			return res.status(404).json({ message: 'Answer is not found.' });
@@ -243,9 +237,20 @@ router.patch('/answered/:id', [auth, creator], async (req, res) => {
 	}
 });
 
+
 router.get('/search/:text', async (req, res) => {
 	try {	
-		const search = await Question.find({ $text: { $search: req.params.text } }).lean();
+		const search = await Question.find(
+			{ 
+				$text: { 
+					$search: req.params.text 
+				}, 
+			},
+			{
+				score: {
+					$meta: "textScore"
+				}
+			}).sort({ score : { $meta : 'textScore' } }).lean(); 
 		res.status(200).json(search);
 	}
 	catch (err) {

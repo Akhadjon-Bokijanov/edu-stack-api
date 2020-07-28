@@ -24,5 +24,15 @@ router.get('/all', [auth, admin], async (req, res) => {
 	}
 });
 
+router.get('/:id', auth, async (req, res) => {
+	try {
+		const user = await User.findById(req.params.id).select("-password -cartList -wishList").lean();
+		res.status(200).json(user);
+	}
+	catch (err) {
+		res.status(400).json({ message: err.message });
+	}
+});
+
 
 module.exports = router;
