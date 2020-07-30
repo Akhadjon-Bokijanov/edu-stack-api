@@ -1,22 +1,11 @@
-function bSearch(array, value) {
-	let begin = 0;
-	let end = array.length - 1;
-	let mid = (begin + end) / 2;
-	while(begin <= end) {
-		mid = Math.floor((begin + end) / 2);
-		if(value === array[mid]) {
-			return true;
-		}
-		else if(value > array[mid]) {
-			begin = mid + 1;
-		}
-		else {
-			end = mid - 1;
-		}
-	}
-	return false;	
+function setHeaders(req, res, next) {
+	return function(req, res, next) {
+				res.header("Access-Control-Allow-Origin", "http://localhost:3000"); // update to match the domain you will make the request from
+				res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, x-token");
+				res.header("Access-Control-Allow-Methods", "GET, PATCH, DELETE, POST");
+				next();
+			}
 }
 
-module.exports = {
-	bSearch: bSearch
-}
+
+module.exports = setHeaders;

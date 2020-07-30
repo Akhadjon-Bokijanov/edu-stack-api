@@ -26,7 +26,7 @@ const surveySchema = new Schema({
 	answeredUsers: {
 		type: [String],
 		select: false
-	}
+	},
 	responceCount: {
 		type: Number,
 		default: 0
@@ -35,9 +35,13 @@ const surveySchema = new Schema({
 		_id: String,
 		fullName: String,
 		avatar: String
+	},
+	isActive: {
+		type: Boolean,
+		default: true
 	}
 });
 
 surveySchema.index({ title: 'text', description: 'text' });
 
-module.exports = mongoose.modul('Surveys', surveySchema);
+module.exports = mongoose.model('Surveys', surveySchema);

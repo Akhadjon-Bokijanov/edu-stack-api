@@ -182,6 +182,26 @@ router.get('/myquestions', auth, async (req, res) => {
 	}
 });
 
+router.get('/myblogs', auth, async (req, res) => {
+	try {
+		const questions = await Blog.find({ 'creator._id': req.user._id }).sort({ like: 1 }).lean();
+		res.status(200).json(questions);
+	}
+	catch (err) {
+		res.status(400).json({ message: err.message });
+	}
+});
+
+router.get('/mysurveys', auth, async (req, res) => {
+	try {
+		const questions = await Survey.find({ 'creator._id': req.user._id }).sort({ responceCount: 1 }).lean();
+		res.status(200).json(questions);
+	}
+	catch (err) {
+		res.status(400).json({ message: err.message });
+	}
+});
+
 router.post('/follow', auth, async (req, res) => {
 	try {
 		const { follower, following, action } = req.body;
