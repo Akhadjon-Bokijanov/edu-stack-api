@@ -66,7 +66,7 @@ router.get('/answer/:id', [auth, creator], async (req, res) => {
 	}
 });
 
-router.post('/answer/:id', auth, async (req, res) => {
+router.patch('/answer/:id', auth, async (req, res) => {
 	try {
 		const { answeredUsers } = await Survey.findById(req.params.id).select("_id +answeredUsers");
 

@@ -6,8 +6,11 @@ const fs = require('fs');
 const bcrypt = require('bcrypt');
 
 const User = require('../models/Users');
+const News = require('../models/News');
 const Resource = require('../models/Resources');
 const Question = require('../models/Questions');
+const Blog = require('../models/Blogs');
+const Survey = require('../models/Surveys');
 const auth = require('../helpers/auth');
 const { userStorage, fileFilter } = require('../helpers/multerVars');
 
@@ -196,6 +199,16 @@ router.get('/mysurveys', auth, async (req, res) => {
 	try {
 		const questions = await Survey.find({ 'creator._id': req.user._id }).sort({ responceCount: 1 }).lean();
 		res.status(200).json(questions);
+	}
+	catch (err) {
+		res.status(400).json({ message: err.message });
+	}
+});
+
+router.get('/mynews', auth, async (req, res) => {
+	try {
+		const news = await News.find({ creatorId: req.user._id }).sort({ date: -1 }).lean();
+		res.status(200).json(news);
 	}
 	catch (err) {
 		res.status(400).json({ message: err.message });
