@@ -56,7 +56,7 @@ router.post('/', auth, async (req, res) => {
 	}
 });
 
-router.get('/answer/:id', [auth, creator], async (req, res) => {
+router.post('/answer/:id', [auth, creator], async (req, res) => {
 	try {
 		const survey = await Survey.findById(req.params.id).select("+answers +answeredUsers").lean();
 		res.status(200).json(survey);
@@ -106,6 +106,26 @@ router.delete('/:id', [auth, creator], async (req, res) => {
 	try {
 		await Survey.findByIdAndDelete(req.params.id);
 		res.status(200).json({ success: true });
+	}
+	catch (err) {
+		res.status(400).json({ message: err.message });
+	}
+});
+
+router.get('/search/:text', async (req, res) => {
+	try {
+		const search = await Survey.find(
+			{ 
+				$text: { 
+					$search: req.params.text 
+				}, 
+			},
+			{
+				score: {
+					$meta: "textScore"
+				}
+			}).sort({ score : { $meta : 'textScore' } }).lean(); 
+		res.status(200).json(search);	
 	}
 	catch (err) {
 		res.status(400).json({ message: err.message });

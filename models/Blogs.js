@@ -32,6 +32,6 @@ const blogSchema = new Schema({
 	}
 });
 
-blogSchema.index({ title: 'text', description: 'text' });
+blogSchema.index({ title: 'text'});
 
 module.exports = mongoose.model('Blogs', blogSchema);

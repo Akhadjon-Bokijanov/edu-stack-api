@@ -257,5 +257,25 @@ router.get('/download/:file/:mime/:title', auth, async (req, res) => {
 	}
 });
 
+router.get('/search/:text', auth, async (req, res) => {
+	try {
+		const search = await Resource.find(
+			{ 
+				$text: { 
+					$search: req.params.text 
+				}, 
+			},
+			{
+				score: {
+					$meta: "textScore"
+				}
+			}).sort({ score : { $meta : 'textScore' } }).lean(); 
+		res.status(200).json(search);	
+	}
+	catch (err) {
+		res.status(400).json({ message: err.message });
+	}
+});
+
 
 module.exports = router;
