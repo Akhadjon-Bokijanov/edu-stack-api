@@ -56,7 +56,7 @@ router.post('/', auth, async (req, res) => {
 	}
 });
 
-router.get('/answer/:id', [auth, creator], async (req, res) => {
+router.post('/answer/:id', [auth, creator], async (req, res) => {
 	try {
 		const survey = await Survey.findById(req.params.id).select("+answers +answeredUsers").lean();
 		res.status(200).json(survey);
