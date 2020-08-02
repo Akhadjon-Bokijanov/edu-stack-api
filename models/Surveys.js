@@ -42,6 +42,6 @@ const surveySchema = new Schema({
 	}
 });
 
-surveySchema.index({ title: 'text', description: 'text' });
+surveySchema.index({ title: 'text' });
 
 module.exports = mongoose.model('Surveys', surveySchema);

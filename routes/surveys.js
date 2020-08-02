@@ -112,5 +112,25 @@ router.delete('/:id', [auth, creator], async (req, res) => {
 	}
 });
 
+router.get('/search/:text', async (req, res) => {
+	try {
+		const search = await Survey.find(
+			{ 
+				$text: { 
+					$search: req.params.text 
+				}, 
+			},
+			{
+				score: {
+					$meta: "textScore"
+				}
+			}).sort({ score : { $meta : 'textScore' } }).lean(); 
+		res.status(200).json(search);	
+	}
+	catch (err) {
+		res.status(400).json({ message: err.message });
+	}
+});
+
 
 module.exports = router;

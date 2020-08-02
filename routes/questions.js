@@ -18,7 +18,7 @@ router.use(function(req, res, next) {
 router.get('/', async (req, res) => {
 	try {
 		const questions = await Question.find().limit(50).sort({ updatedAt: -1 }).lean();
-		res.status(200).json(questions);
+		res.status(200).json({ success: true });
 	}
 	catch (err) {
 		res.status(400).json({ message: err.message });

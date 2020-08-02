@@ -63,5 +63,6 @@ const resourceSchema = new mongoose.Schema({
 	}
 });
 
+resourceSchema.index({ title: 'text' });
 
 module.exports = mongoose.model('Resources', resourceSchema);
