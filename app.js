@@ -16,6 +16,9 @@ const questionsRoute = require('./routes/questions');
 const blogRoute = require('./routes/blogs');
 const surveyRoute = require('./routes/surveys');
 
+// patched mongoose
+require('./helpers/customFuncs');
+
 // database connection
 mongoose.connect(
 	process.env.ConnectionString, 

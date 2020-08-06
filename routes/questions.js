@@ -5,6 +5,7 @@ const auth = require('../helpers/auth');
 const User = require('../models/Users');
 const Question = require('../models/Questions');
 const { admin, collaborator, creator } = require('../helpers/admin');
+const { clearCache } = require('../helpers/customFuncs');
 
 
 router.use(function(req, res, next) {
@@ -17,8 +18,9 @@ router.use(function(req, res, next) {
 
 router.get('/', async (req, res) => {
 	try {
-		const questions = await Question.find().limit(50).sort({ updatedAt: -1 }).lean();
-		res.status(200).json({ success: true });
+		const questions = await Question.find().limit(50).sort({ updatedAt: -1 })
+			.lean().cache('question');
+		res.status(200).json(questions);
 	}
 	catch (err) {
 		res.status(400).json({ message: err.message });
@@ -27,7 +29,8 @@ router.get('/', async (req, res) => {
 
 router.get('/category/:category', async (req, res) => {
 	try {
-		const questions = await Question.find({categories: { $elemMatch: {$eq: req.params.category} }}).lean();
+		const questions = await Question.find({categories: { $elemMatch: {$eq: req.params.category} }})
+			.lean().cache(`question_${req.params.category}`);
 		res.status(200).json(questions);
 	}
 	catch (err) {
@@ -37,9 +40,8 @@ router.get('/category/:category', async (req, res) => {
 
 router.get('/:id', async (req, res) => {
 	try {
-		console.log(req.params.id);
-		console.log(typeof req.params.id);
-		const question = await Question.findOne({ _id: req.params.id }).lean();
+		const question = await Question.findOne({ _id: req.params.id })
+			.lean().cache(`question_${req.params.id}`);
 		if(!question) {
 			return res.status(404).json({ message: 'Question is not found.' });
 		}
@@ -70,12 +72,15 @@ router.post('/', auth, async (req, res) => {
 	catch (err) {
 		res.status(400).json({ message: err.message });
 	}
+	const clear = req.body.categories;
+	clear.push('question');
+	clearCache(clear);
 });
 
 router.patch('/:id', [auth, creator], async (req, res) => {
 	try {
-		const updated = await Question.findOneAndUpdate(
-			{ _id: req.params.id },
+		const updated = await Question.findByIdAndUpdate(
+			req.params.id,
 			{
 				$set: {
 					question: req.body.question,
@@ -91,6 +96,10 @@ router.patch('/:id', [auth, creator], async (req, res) => {
 	catch (err) {
 		res.status(400).json({ message: err.message });
 	}
+	const clear = req.body.categories;
+	clear.push('question');
+	clear.push(`question_${req.params.id}`);
+	clearCache(clear);
 });
 
 router.delete('/:id', [auth, creator], async (req, res) => {
@@ -101,6 +110,7 @@ router.delete('/:id', [auth, creator], async (req, res) => {
 	catch (err) {
 		res.status(400).json({ message: err.message });
 	}
+	clearCache(['question', `question_${req.params.id}`]);
 });
 
 // crud operations for answers
@@ -119,8 +129,8 @@ router.post('/answer/:id', auth, async (req, res) => {
 			date: currentDate,
 			likedUsers: []
 		};
-		const updated = await Question.findOneAndUpdate(
-			{ _id: req.params.id },
+		const updated = await Question.findByIdAndUpdate(
+			req.params.id,
 			{
 				$push: {
 					answers: answer
@@ -132,6 +142,7 @@ router.post('/answer/:id', auth, async (req, res) => {
 	catch (err) {
 		res.status(400).json({ message: err.message });
 	}
+	clearCache(['question', `question_${req.params.id}`]);
 });
 
 router.patch('/answer/:questionId/:answerId', [auth, creator], async (req, res) => {
@@ -153,6 +164,7 @@ router.patch('/answer/:questionId/:answerId', [auth, creator], async (req, res) 
 	catch (err) {
 		res.status(400).json({ message: err.message });
 	}
+	clearCache(['question', `question_${req.params.questionId}`]);
 });
 
 router.patch('/like/:questionId/:answerId', auth, async (req, res) => {
@@ -199,6 +211,7 @@ router.patch('/like/:questionId/:answerId', auth, async (req, res) => {
 	catch (err) {
 		res.status(400).json({ message: err.message });
 	}
+	clearCache(['question', `question_${req.params.questionId}`]);
 });
 
 router.patch('/removeanswer/:questionId/:answerId', [auth, creator], async (req, res) => {
@@ -218,6 +231,7 @@ router.patch('/removeanswer/:questionId/:answerId', [auth, creator], async (req,
 	catch (err) {
 		res.status(400).json({ message: err.message });
 	}
+	clearCache(['question', `question_${req.params.questionId}`]);
 });
 
 router.patch('/answered/:id', [auth, creator], async (req, res) => {
@@ -235,6 +249,7 @@ router.patch('/answered/:id', [auth, creator], async (req, res) => {
 	catch (err) {
 		res.status(400).json({ message: err.message });
 	}
+	clearCache(['question', `question_${req.params.id}`]);
 });
 
 

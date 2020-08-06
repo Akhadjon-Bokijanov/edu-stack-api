@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-const mongoose_fuzzy_searching = require('mongoose-fuzzy-searching');
 
 const questionSchema = new mongoose.Schema({
 	question: {
@@ -33,6 +32,6 @@ const questionSchema = new mongoose.Schema({
 	}
 });
 
-questionSchema.index({ question: 'text', description: 'text' });
+questionSchema.index({ question: 'text', categories: 'text' });
 
 module.exports = mongoose.model('Questions', questionSchema);

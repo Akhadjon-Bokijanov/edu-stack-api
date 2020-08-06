@@ -7,7 +7,7 @@ const User = require('../models/Users');
 const auth = require('../helpers/auth');
 const { admin, collaborator, newsCreator } = require('../helpers/admin');
 const { newsStorage, fileFilter } = require('../helpers/multerVars');
-
+const { clearCache } = require('../helpers/customFuncs');
 
 const upload = multer({ 
 	storage: newsStorage,
@@ -25,10 +25,23 @@ router.use(function(req, res, next) {
 	next();
 });
 
+router.get('/pending', [auth, admin], async (req, res) => {
+	try {
+		const pendingNews = await News.find({ status: false })
+			.sort({ date: -1 }).lean().cache('news_pending');
+		res.status(200).json(pendingNews); 
+	}
+	catch (err) {
+		console.log(err);
+		res.status(400).json({ message: err.message });
+	}
+});
+
 router.get('/', async (req, res) => {
 	try {
 		const d = new Date();
-		const news = await News.find({ date: { $gte: d.setDate(d.getDate()-30) } }).sort({date: -1}).lean();
+		const news = await News.find({ date: { $gte: d.setDate(d.getDate()-30) }, status: true })
+			.sort({date: -1}).lean().cache('news');
 		res.status(200).json(news);
 	}
 	catch(err) {
@@ -38,7 +51,8 @@ router.get('/', async (req, res) => {
 
 router.get('/:newsID', async (req, res) => {
 	try {
-		const news = await News.findById(req.params.newsID).lean();
+		const news = await News.findById(req.params.newsID)
+			.lean().cache(`news_${req.params.newsID}`);
 		if(!news) {
 			return res.status(404).json({ message: 'News not found.' });
 		}
@@ -46,16 +60,6 @@ router.get('/:newsID', async (req, res) => {
 	}
 	catch(err) {
 		res.status(400).json({ message : err });
-	}
-});
-
-router.get('/test/:text', (req, res) => {
-	try {
-		console.log(req.params.text);
-		res.send(req.params.text);
-	}
-	catch(err) {
-		res.send(err.message);
 	}
 });
 
@@ -80,6 +84,7 @@ router.post('/', [auth, collaborator, upload.any()], async (req, res) => {
 	catch (err) {
 		res.status(400).json({ message: err.message });
 	}
+	clearCache(['news_pending']);
 });
 
 router.delete('/:newsID', [auth, newsCreator], async (req, res) => {
@@ -98,20 +103,21 @@ router.delete('/:newsID', [auth, newsCreator], async (req, res) => {
 	catch(err) {
 		res.status(400).json({ message : err });
 	}
+	clearCache([`news_${req.params.newsID}`]);
 });
 
 router.patch('/:newsID', [auth, newsCreator], async (req, res) => {
 	try {
-		const update = await News.findOneAndUpdate(
-			{ _id: req.params.newsID},
+		const update = await News.findByIdAndUpdate(
+			req.params.newsID,
 			{
 				$set: {
 					title: req.body.title,
 					description: req.body.description,
 					organization: req.body.organization,
-					category: req.body.category,
 					isImportant: req.body.isImportant,
-					detail: req.body.detail
+					detail: req.body.detail,
+					status: false
 				} 
 			},
 			{ new: true }
@@ -121,12 +127,13 @@ router.patch('/:newsID', [auth, newsCreator], async (req, res) => {
 	catch(err) {
 		res.status(400).json({ message: err });
 	}
+	clearCache(['news', 'news_pending', `news_${req.params.newsID}`]);
 });
 
 router.patch('/approve/:newsID', [auth, admin], async (req, res) => {
 	try {
-		const news = await News.findOneAndUpdate(
-			{ _id: req.params.newsID},
+		const news = await News.findByIdAndUpdate(
+			req.params.newsID,
 			{
 				$set: {
 					status: true
@@ -138,6 +145,18 @@ router.patch('/approve/:newsID', [auth, admin], async (req, res) => {
 	}
 	catch(err) {
 		res.status(400).json( { message : err.message});
+	}
+	clearCache(['news', 'news_pending']);
+});
+
+router.get('/category/:category', async (req, res) => {
+	try {
+		const news = await News.find({ category: req.params.category })
+			.sort({ date: -1 }).lean().cache(`news_${req.params.category}`);
+		res.status(200).json(news);
+	}
+	catch (err) {
+		res.status(400).json({ message: err.message });
 	}
 });
 

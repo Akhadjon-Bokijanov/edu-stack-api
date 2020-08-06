@@ -16,7 +16,8 @@ router.use(function(req, res, next) {
 
 router.get('/all', [auth, admin], async (req, res) => {
 	try {
-		const users = await User.find().select("-password").sort({ registeredDate: -1 }).lean();
+		const users = await User.find().select("-password").sort({ registeredDate: -1 })
+			.lean().cache('user_all');
 		res.status(200).json(users);
 	}
 	catch (err) {
@@ -26,7 +27,8 @@ router.get('/all', [auth, admin], async (req, res) => {
 
 router.get('/:id', auth, async (req, res) => {
 	try {
-		const user = await User.findById(req.params.id).select("-password -cartList -wishList").lean();
+		const user = await User.findById(req.params.id).select("-password -cartList -wishList")
+			.lean().cache(`user_${req.params.id}`);
 		res.status(200).json(user);
 	}
 	catch (err) {

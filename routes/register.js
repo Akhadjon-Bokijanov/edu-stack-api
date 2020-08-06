@@ -3,6 +3,7 @@ const router = express.Router();
 const User = require('../models/Users');
 const _ = require('lodash');
 const bcrypt = require('bcrypt');
+const { clearCache } = require('../helpers/customFuncs');
 
 router.use(function(req, res, next) {
 	res.header("Access-Control-Allow-Origin", "http://localhost:3000"); // update to match the domain you will make the request from
@@ -31,6 +32,7 @@ router.post('/', async (req, res) => {
 	catch(err) {
 		res.status(400).json( { message: err.message } );
 	}
+	clearCache(['user_all']);
 });
 
 module.exports = router;

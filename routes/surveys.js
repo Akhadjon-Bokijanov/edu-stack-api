@@ -5,6 +5,7 @@ const User = require('../models/Users');
 const Survey = require('../models/Surveys');
 const auth = require('../helpers/auth');
 const { admin, collaborator, creator } = require('../helpers/admin');
+const { clearCache } = require('../helpers/customFuncs');
 
 
 router.use(function(req, res, next) {
@@ -17,7 +18,8 @@ router.use(function(req, res, next) {
 
 router.get('/', async (req, res) => {
 	try {
-		const surveys = await Survey.find().sort({ responceCount: 1 }).lean();
+		const surveys = await Survey.find().sort({ responceCount: 1 })
+			.lean().cache('survey');
 		res.status(200).json(surveys);
 	}
 	catch (err) {
@@ -27,7 +29,8 @@ router.get('/', async (req, res) => {
 
 router.get('/:id', async (req, res) => {
 	try {
-		const survey = await Survey.findById(req.params.id).lean();
+		const survey = await Survey.findById(req.params.id)
+			.lean().cache(`survey_${req.params.id}`);
 		res.status(200).json(survey);
 	}
 	catch (err) {
@@ -54,6 +57,7 @@ router.post('/', auth, async (req, res) => {
 	catch (err) {
 		res.status(400).json({ message: err.message });
 	}
+	clearCache(['survey']);
 });
 
 router.post('/answer/:id', [auth, creator], async (req, res) => {
@@ -88,6 +92,7 @@ router.patch('/answer/:id', auth, async (req, res) => {
 	catch (err) {
 		res.status(400).json({ message: err.message });
 	}
+	clearCache(['survey', `survey_${req.params.id}`]);
 });
 
 router.patch('/toggle/:id', [auth, creator], async (req, res) => {
@@ -100,6 +105,7 @@ router.patch('/toggle/:id', [auth, creator], async (req, res) => {
 	catch (err) {
 		res.status(400).json({ message: err.message });
 	}
+	clearCache(['survey', `survey_${req.params.id}`]);
 });
 
 router.delete('/:id', [auth, creator], async (req, res) => {
@@ -110,6 +116,7 @@ router.delete('/:id', [auth, creator], async (req, res) => {
 	catch (err) {
 		res.status(400).json({ message: err.message });
 	}
+	clearCache(['survey', `survey_${req.params.id}`]);
 });
 
 router.get('/search/:text', async (req, res) => {
