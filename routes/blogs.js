@@ -5,6 +5,7 @@ const auth = require('../helpers/auth');
 const User = require('../models/Users');
 const Blog = require('../models/Blogs');
 const { admin, collaborator, creator } = require('../helpers/admin');
+const { clearCache } = require('../helpers/customFuncs');
 
 
 router.use(function(req, res, next) {
@@ -17,7 +18,8 @@ router.use(function(req, res, next) {
 
 router.get('/', async (req, res) => {
 	try {
-		const blogs = await Blog.find().sort({ like: 1 }).limit(50).lean();
+		const blogs = await Blog.find().sort({ like: 1 })
+			.limit(50).lean().cache('blog');
 		res.status(200).json(blogs);
 	}
 	catch (err) {
@@ -27,7 +29,8 @@ router.get('/', async (req, res) => {
 
 router.get('/:id', async (req, res) => {
 	try {
-		const blog = await Blog.findById(req.params.id).lean();
+		const blog = await Blog.findById(req.params.id)
+			.lean().cache(`blog_${req.params.id}`);
 		res.status(200).json(blog);
 	}
 	catch (err) {
@@ -38,7 +41,7 @@ router.get('/:id', async (req, res) => {
 router.get('/category/:category', async (req, res) => {
 	try {
 		const blogs = await Blog.find({categories: { $elemMatch: {$eq: req.params.category} }})
-			.sort({ like: 1 }).lean();
+			.sort({ like: 1 }).lean().cache(`blog_${req.params.category}`);
 		res.status(200).json(blogs);
 	}
 	catch (err) {
@@ -65,6 +68,9 @@ router.post('/', auth, async (req, res) => {
 	catch (err) {
 		res.status(400).json({ message: err.message });
 	}
+	const clear = req.body.categories;
+	clear.push('blog');
+	clearCache(clear);
 });
 
 router.patch('/:id', [auth, creator], async (req, res) => {
@@ -82,6 +88,9 @@ router.patch('/:id', [auth, creator], async (req, res) => {
 	catch (err) {
 		res.status(400).json({ message: err.message });
 	}
+	const clear = req.body.categories;
+	clear.push('blog');
+	clearCache(clear);
 });
 
 router.delete('/:id', [auth, creator], async (req, res) => {
@@ -92,6 +101,7 @@ router.delete('/:id', [auth, creator], async (req, res) => {
 	catch (err) {
 		res.status(400).json({ message: err.message });
 	}
+	clearCache(['blog', `blog_${req.params.id}`]);
 });
 
 router.post('/like/:id', auth, async (req, res) => {
@@ -124,6 +134,7 @@ router.post('/like/:id', auth, async (req, res) => {
 	catch (err) {
 		res.status(400).json({ message: err.message });
 	}
+	clearCache(['blog', `blog_${req.params.id}`]);
 });
 
 router.get('/search/:text', async (req, res) => {

@@ -13,6 +13,7 @@ const Blog = require('../models/Blogs');
 const Survey = require('../models/Surveys');
 const auth = require('../helpers/auth');
 const { userStorage, fileFilter } = require('../helpers/multerVars');
+const { clearCache } = require('../helpers/customFuncs');
 
 
 const upload = multer({
@@ -34,7 +35,7 @@ router.use(function(req, res, next) {
 
 router.get('/', auth, async (req, res) => {
 	try {
-		const user = await User.findById(req.user._id).select('-password -').lean();
+		const user = await User.findById(req.user._id).select('-password').lean();
 		res.status(200).json(user);
 	}
 	catch (err) {
@@ -69,9 +70,9 @@ router.patch('/changePhoto', [auth, upload.any()], async (req, res) => {
 		}
 	}
 	catch (err) {
-		console.log(err);
 		res.status(400).json({ message: err.message });
 	}
+	clearCache([`user_${req.user._id}`]);
 });
 
 
@@ -127,6 +128,7 @@ router.patch('/changeInfo', auth, async (req, res) => {
 	catch (err) {
 		res.status(400).json({ message: err.message });
 	}
+	clearCache([`user_${req.user._id}`]);
 });
 
 router.patch('/changeBackground', auth, async (req, res) => {
@@ -145,6 +147,7 @@ router.patch('/changeBackground', auth, async (req, res) => {
 	catch (err) {
 		res.status(400).json({ message: err.message });
 	}
+	clearCache([`user_${req.user._id}`]);
 });
 
 router.patch('/changeSkills', auth, async (req, res) => {
@@ -163,6 +166,7 @@ router.patch('/changeSkills', auth, async (req, res) => {
 	catch (err) {
 		res.status(400).json({ message: err.message });
 	}
+	clearCache([`user_${req.user._id}`]);
 });
 
 router.get('/myresources', auth, async (req, res) => {
@@ -273,6 +277,7 @@ router.post('/follow', auth, async (req, res) => {
 	catch (err) {
 		res.status(400).json({ message: err.message });
 	}
+	clearCache([`user_${follower}`, `user_${following}`]);
 });
 
 module.exports = router; 

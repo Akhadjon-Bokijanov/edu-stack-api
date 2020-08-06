@@ -8,6 +8,7 @@ const { admin, collaborator, creator } = require('../helpers/admin');
 const User = require('../models/Users');
 const Resource = require('../models/Resources');
 const { resourceFilter, resourceStorage } = require('../helpers/multerVars');
+const { clearCache } = require('../helpers/customFuncs');
 
 const upload = multer({
 	storage: resourceStorage,
@@ -29,7 +30,7 @@ router.use(function(req, res, next) {
 router.get('/', auth, async (req, res) => {
 	try {
 		const resources = await Resource.find({ resourceType: 'public' })
-			.limit(50).sort({ date: -1 }).lean();
+			.limit(50).sort({ date: -1 }).lean().cache('resource');
 		res.status(200).json(resources);
 	}
 	catch (err) {
@@ -37,10 +38,10 @@ router.get('/', auth, async (req, res) => {
 	}
 });
 
-router.get('/:category', auth, async (req, res) => {
+router.get('/category/:category', auth, async (req, res) => {
 	try {
 		const resources = await Resource.find({ resourceType: 'public', category: req.params.category })
-			.sort({ date: -1 }).lean();
+			.sort({ date: -1 }).lean().cache(`resource_${req.params.category}`);
 		res.status(200).json(resources);
 	}
 	catch (err) {
@@ -50,7 +51,8 @@ router.get('/:category', auth, async (req, res) => {
 
 router.get('/all', [auth, admin], async (req, res) => {
 	try {
-		const resources = await Resource.find().sort({ date: -1 }).lean();
+		const resources = await Resource.find().sort({ date: -1 })
+			.lean().cache('resource_all');
 		res.status(200).json(resources);
 	}
 	catch (err) {
@@ -60,7 +62,8 @@ router.get('/all', [auth, admin], async (req, res) => {
 
 router.get('/:id', auth, async (req, res) => {
 	try {
-		const resource = await Resource.findById(req.params.id).lean();
+		const resource = await Resource.findById(req.params.id)
+			.lean().cache(`resource_${req.params.id}`);
 		if(!resource) {
 			return res.status(404).json({ message: "Resource not found." });
 		}
@@ -100,12 +103,13 @@ router.post('/', [auth, collaborator, upload.any()], async (req, res) => {
 	catch (err) {
 		res.status(400).json({ message: err.message });
 	}
+	clearCache(['resource', `resource_${req.body.category}`, 'resource_all']);
 });
 
 router.patch('/:id', [auth, creator], async (req, res) => {
 	try {
-		const update = await Resource.findOneAndUpdate(
-			{ _id: req.params.id },
+		const update = await Resource.findByIdAndUpdate(
+			req.params.id,
 			{
 				$set: {
 					title: req.body.title,
@@ -123,8 +127,11 @@ router.patch('/:id', [auth, creator], async (req, res) => {
 	catch (err) {
 		res.status(400).json({ message: err.message });
 	}
+	clearCache(['resource', 'resource_all', `resource_${req.params.id}`]);
 });
 
+
+// should be changed when AWS S3 used
 router.patch('/file/:id', [auth, creator], async (req, res) => {
 	try {
 		if(req.files.length === 1) {
@@ -185,6 +192,7 @@ router.delete('/:id', [auth, creator], async (req, res) => {
 	catch (err) {
 		res.status(400).json({ message: err.message });
 	}
+	clearCache(['resource', 'resource_all', `resource_${req.params.id}`]);	
 });
 
 router.patch('/rate/:id', auth, async (req, res) => {
@@ -220,13 +228,13 @@ router.patch('/rate/:id', auth, async (req, res) => {
 	catch (err) {
 		res.status(400).json({ message: err.message });
 	}
+	clearCache(['resource', 'resource_all', `resource_${req.params.id}`]);
 });
 
 router.get('/rating/:userId/:resourceId', auth, async (req, res) => {
 	try {
 		const rating = await Resource.findOne({ _id: req.params.resourceId }, { ratedUsers: { $elemMatch: { user: req.params.userId } } })
 			.select("_id +ratedUsers").lean();
-		console.log(rating);
 		if(!rating) {
 			res.status(200).json({ rating: 0 });
 		}
