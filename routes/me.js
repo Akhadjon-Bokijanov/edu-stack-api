@@ -220,8 +220,8 @@ router.get('/mynews', auth, async (req, res) => {
 });
 
 router.post('/follow', auth, async (req, res) => {
+	const { follower, following, action } = req.body;
 	try {
-		const { follower, following, action } = req.body;
 
 		if(!(req.user._id === follower || req.user._id === following)) {
 			return res.status(403).json({ message: 'You are not allowed.' });
@@ -240,7 +240,7 @@ router.post('/follow', auth, async (req, res) => {
 
 		switch(action) {
 			case 'follow':
-				await Promise.all([
+				const res1 = await Promise.all([
 					User.findByIdAndUpdate(follower, {
 						$push: {
 							following: following
@@ -252,10 +252,11 @@ router.post('/follow', auth, async (req, res) => {
 						}
 					})
 				]);
+				console.log(res1);
 				break;
 
 			case 'unfollow':
-				await Promise.all([
+				const res2 = await Promise.all([
 					User.findByIdAndUpdate(follower, {
 						$pull: {
 							following: following
@@ -267,6 +268,7 @@ router.post('/follow', auth, async (req, res) => {
 						}
 					})
 				]);
+				console.log(res2);
 				break;
 
 			default: 
@@ -277,7 +279,10 @@ router.post('/follow', auth, async (req, res) => {
 	catch (err) {
 		res.status(400).json({ message: err.message });
 	}
+	console.log(follower, following);
 	clearCache([`user_${follower}`, `user_${following}`]);
 });
+
+router.post('/')
 
 module.exports = router; 
