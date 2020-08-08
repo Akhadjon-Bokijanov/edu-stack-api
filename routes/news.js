@@ -49,6 +49,17 @@ router.get('/', async (req, res) => {
 	}
 });
 
+router.get('/org/:org', async (req, res) => {
+	try {
+		const news = await News.find({ organization: req.params.org, status: true })
+			.cache(`news_org_${req.params.org}`);
+		res.status(200).json(news);
+	}
+	catch (err) {
+		res.status(400).json({ message: err.message });
+	}
+});
+
 router.get('/:newsID', async (req, res) => {
 	try {
 		const news = await News.findById(req.params.newsID)
@@ -84,7 +95,7 @@ router.post('/', [auth, collaborator, upload.any()], async (req, res) => {
 	catch (err) {
 		res.status(400).json({ message: err.message });
 	}
-	clearCache(['news_pending']);
+	clearCache(['news_pending', `news_org_${req.body.organization}`]);
 });
 
 router.delete('/:newsID', [auth, newsCreator], async (req, res) => {
@@ -127,7 +138,7 @@ router.patch('/:newsID', [auth, newsCreator], async (req, res) => {
 	catch(err) {
 		res.status(400).json({ message: err });
 	}
-	clearCache(['news', 'news_pending', `news_${req.params.newsID}`]);
+	clearCache(['news', 'news_pending', `news_${req.params.newsID}`, `news_org_${req.body.organization}`]);
 });
 
 router.patch('/approve/:newsID', [auth, admin], async (req, res) => {

@@ -33,7 +33,12 @@ mongoose.connect(
 
 // all middleware functions
 app.disable('x-powered-by');
-app.use(bodyParser.json({limit: '50mb', extended: true }));
+app.use(bodyParser.json({
+		limit: '50mb', extended: true 
+	}));
+app.use(bodyParser.urlencoded({
+		limit: "50mb", extended: true, parameterLimit:50000
+	}));
 app.use('/uploads/newsImages', express.static('uploads/newsImages'));
 app.use('/uploads/avatars', express.static('uploads/avatars'));
 app.use('/uploads/resources', express.static('uploads/resources'));
