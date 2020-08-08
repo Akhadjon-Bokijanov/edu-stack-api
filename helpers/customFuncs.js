@@ -40,6 +40,6 @@ module.exports = {
 		for(let i = 0; i < key.length; i++) {
 			client.del(key[i]);
 		}
-		console.log('cache cleared');
+		//console.log('cache cleared');
 	}
 };
