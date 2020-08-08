@@ -70,6 +70,14 @@ const userSchema = new mongoose.Schema({
 	background: {
 		type: [{}]
 	},
+	notification: {
+		type: [{}],
+		select: false
+	},
+	notificationCount: {
+		type: Number,
+		default: 0
+	},
 	followers: Array,
 	following: Array
 });
