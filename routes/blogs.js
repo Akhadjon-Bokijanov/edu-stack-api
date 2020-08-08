@@ -110,7 +110,7 @@ router.post('/like/:id', auth, async (req, res) => {
 		if(liked.likedUsers.includes(req.user._id)) {
 			return req.status(400).json({ message: 'You have already liked this Blog.' });
 		}
-		if(liked.creator._id !== req.body.creator._id) {
+		if(liked.creator._id == req.body.creator._id) {
 			return req.status(403).json({ message: "Don't try to cheat!" });
 		}
 
