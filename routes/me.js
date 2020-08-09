@@ -35,7 +35,7 @@ router.use(function(req, res, next) {
 
 router.get('/', auth, async (req, res) => {
 	try {
-		const user = await User.findById(req.user._id).select('-password +notification').lean();
+		const user = await User.findById(req.user._id).select('-password +notification +lastNotificationCount').lean();
 		res.status(200).header('x-token', user.genToken()).json(user);
 	}
 	catch (err) {
@@ -223,30 +223,30 @@ router.post('/follow', auth, async (req, res) => {
 	const { follower, following, action } = req.body;
 	try {
 
-		if(!(req.user._id === follower || req.user._id === following)) {
+		if(!(req.user._id === follower._id || req.user._id === following._id)) {
 			return res.status(403).json({ message: 'You are not allowed.' });
 		}
-		if(action === 'follow' && req.user._id !== follower) {
+		if(action === 'follow' && req.user._id !== follower._id) {
 			return res.status(403).json({ message: 'You are not allowed.' });
 		}
 		
 		const userInfo = await User.findById(req.user._id).select('followers following').lean();
-		if(action === 'follow' && userInfo.following.includes(following)) {
+		if(action === 'follow' && userInfo.following.some(el => el._id === following._id)) {
 			return res.status(400).json({ message: 'You are already following this user' });
 		}
-		if(following === follower) {
+		if(following._id === follower._id) {
 			return res.status(400).json({ message: 'You can\'t (un)follow yourself.' });
 		}
 
 		switch(action) {
 			case 'follow':
 				await Promise.all([
-					User.findByIdAndUpdate(follower, {
+					User.findByIdAndUpdate(follower._id, {
 						$push: {
 							following: following
 						}
 					}),
-					User.findByIdAndUpdate(following, {
+					User.findByIdAndUpdate(following._id, {
 						$push: {
 							followers: follower
 						}
@@ -256,12 +256,12 @@ router.post('/follow', auth, async (req, res) => {
 
 			case 'unfollow':
 				await Promise.all([
-					User.findByIdAndUpdate(follower, {
+					User.findByIdAndUpdate(follower._id, {
 						$pull: {
 							following: following
 						}
 					}),
-					User.findByIdAndUpdate(following, {
+					User.findByIdAndUpdate(following._id, {
 						$pull: {
 							followers: follower
 						}
@@ -277,7 +277,7 @@ router.post('/follow', auth, async (req, res) => {
 	catch (err) {
 		res.status(400).json({ message: err.message });
 	}
-	clearCache([`user_${follower}`, `user_${following}`]);
+	clearCache([`user_${follower._id}`, `user_${following._id}`]);
 });
 
 router.post('/wishlist', auth, async (req, res) => {
@@ -296,6 +296,63 @@ router.post('/wishlist', auth, async (req, res) => {
 	catch (err) {
 		res.status(400).json({ message: err.message });
 	}
+	clearCache([`user_${req.user._id}`]);
 });
+
+router.patch('/wishlist', auth, async (req, res) => {
+	try {
+		const wish = await User.findByIdAndUpdate(
+			req.user._id,
+			{
+				$pull: {
+					wishList: req.body
+				}
+			},
+			{ new: true }
+		);
+		res.status(200).json(wish);
+	}
+	catch (err) {
+		res.status(400).json({ message: err.message });
+	}
+	clearCache([`user_${req.user._id}`]);
+});
+
+router.post('/cartlist', auth, async (req, res) => {
+	try {
+		const cart = await User.findByIdAndUpdate(
+			req.user._id,
+			{
+				$push: {
+					cartList: req.body
+				}
+			},
+			{ new: true }
+		);
+		res.status(200).json(cart);
+	}
+	catch (err) {
+		res.status(400).json({ message: err.message });
+	}
+});
+
+router.patch('/cartlist', auth, async (req, res) => {
+	try {
+		const cart = await User.findByIdAndUpdate(
+			req.user._id,
+			{
+				$pull: {
+					cartList: req.body
+				}
+			},
+			{ new: true }
+		);
+		res.status(200).json(cart);
+	}
+	catch (err) {
+		res.status(400).json({ message: err.message });
+	}
+});
+
 
 module.exports = router; 

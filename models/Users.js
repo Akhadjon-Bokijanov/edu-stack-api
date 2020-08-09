@@ -72,14 +72,28 @@ const userSchema = new mongoose.Schema({
 	},
 	notification: {
 		type: [{}],
+		default: [],
 		select: false
 	},
 	notificationCount: {
 		type: Number,
 		default: 0
 	},
-	followers: Array,
-	following: Array
+	lastNotificationCount: {
+		type: Number,
+		default: 0,
+		select: false
+	},
+	followers: [{
+		_id: String,
+		fullName: String,
+		avatar: String
+	}],
+	following: [{
+		_id: String,
+		fullName: String,
+		avatar: String
+	}]
 });
 
 
