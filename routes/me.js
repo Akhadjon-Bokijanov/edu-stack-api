@@ -35,8 +35,8 @@ router.use(function(req, res, next) {
 
 router.get('/', auth, async (req, res) => {
 	try {
-		const user = await User.findById(req.user._id).select('-password').lean();
-		res.status(200).json(user);
+		const user = await User.findById(req.user._id).select('-password +notification').lean();
+		res.status(200).header('x-token', user.genToken()).json(user);
 	}
 	catch (err) {
 		res.status(400).json({ message: err.message });
@@ -240,7 +240,7 @@ router.post('/follow', auth, async (req, res) => {
 
 		switch(action) {
 			case 'follow':
-				const res1 = await Promise.all([
+				await Promise.all([
 					User.findByIdAndUpdate(follower, {
 						$push: {
 							following: following
@@ -252,11 +252,10 @@ router.post('/follow', auth, async (req, res) => {
 						}
 					})
 				]);
-				console.log(res1);
 				break;
 
 			case 'unfollow':
-				const res2 = await Promise.all([
+				await Promise.all([
 					User.findByIdAndUpdate(follower, {
 						$pull: {
 							following: following
@@ -268,7 +267,6 @@ router.post('/follow', auth, async (req, res) => {
 						}
 					})
 				]);
-				console.log(res2);
 				break;
 
 			default: 
@@ -279,10 +277,25 @@ router.post('/follow', auth, async (req, res) => {
 	catch (err) {
 		res.status(400).json({ message: err.message });
 	}
-	console.log(follower, following);
 	clearCache([`user_${follower}`, `user_${following}`]);
 });
 
-router.post('/')
+router.post('/wishlist', auth, async (req, res) => {
+	try {
+		const wish = await User.findByIdAndUpdate(
+			req.user._id,
+			{
+				$push: {
+					wishList: req.body
+				}
+			},
+			{ new: true }
+		);
+		res.status(200).json(wish);
+	}
+	catch (err) {
+		res.status(400).json({ message: err.message });
+	}
+});
 
 module.exports = router; 
