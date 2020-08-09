@@ -79,6 +79,7 @@ const userSchema = new mongoose.Schema({
 		type: Number,
 		default: 0
 	},
+	// notification count without isRead
 	lastNotificationCount: {
 		type: Number,
 		default: 0,

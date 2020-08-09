@@ -35,11 +35,7 @@ router.use(function(req, res, next) {
 
 router.get('/', auth, async (req, res) => {
 	try {
-<<<<<<< HEAD
-		const user = await User.findById(req.user._id).select('-password +notification +lastNotificationCount').lean();
-=======
-		const user = await User.findById(req.user._id).select('-password +notification');
->>>>>>> 754c6b8ce7f5634bf44e110ab61ccf14e01165b3
+		const user = await User.findById(req.user._id).select('-password +notification +lastNotificationCount');
 		res.status(200).header('x-token', user.genToken()).json(user);
 	}
 	catch (err) {
