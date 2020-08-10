@@ -14,11 +14,14 @@ router.use(function(req, res, next) {
 
 router.post('/', async (req, res) => {
 	try {
-		const user = await User.findOne({ email: req.body.email });
+		let user = await User.findOne({ email: req.body.email });
 		if(!user) return res.status(400).json({ message: 'Invalid email or password.' });
 
 		const match = await bcrypt.compare(req.body.password, user.password);
 		if(match) {
+			user.notificationCount = user.notification.length - user.lastNotificationCount;
+			user.lastNotificationCount = user.notification.length;
+			await user.save();
 			res.status(200).header('x-token', user.genToken()).json(user.toJSON());
 		}
 		else {

@@ -3,6 +3,7 @@ const router = express.Router();
 const User = require('../models/Users');
 const auth = require('../helpers/auth');
 const { admin } = require('../helpers/admin');
+const { clearCache } = require('../helpers/customFuncs');
 
 
 router.use(function(req, res, next) {
@@ -34,6 +35,25 @@ router.get('/:id', auth, async (req, res) => {
 	catch (err) {
 		res.status(400).json({ message: err.message });
 	}
+});
+
+router.post('/notification', auth, async (req, res) => {
+	try {
+		const { sender, receiver, message } = req.body;
+		await User.findByIdAndUpdate(
+			receiver,
+			{
+				$push: {
+					notification: { sender, message, date: new Date() }
+				}
+			}
+		);
+		res.status(200).json({ success: true }); 
+	}
+	catch (err) {
+		res.status(400).json({ message: err.message });
+	}
+	clearCache([`user_${req.body.receiver}`]);
 });
 
 

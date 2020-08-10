@@ -35,8 +35,11 @@ router.use(function(req, res, next) {
 
 router.get('/', auth, async (req, res) => {
 	try {
-		const user = await User.findById(req.user._id).select('-password +notification +lastNotificationCount');
+		let user = await User.findById(req.user._id).select('-password +notification +lastNotificationCount');
+		user.notificationCount = user.notification.length - user.lastNotificationCount;
 		res.status(200).header('x-token', user.genToken()).json(user);
+		user.lastNotificationCount = user.notification.length;
+		await user.save();
 	}
 	catch (err) {
 		res.status(400).json({ message: err.message });
