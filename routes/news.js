@@ -19,7 +19,7 @@ const upload = multer({
 
 
 router.use(function(req, res, next) {
-	res.header("Access-Control-Allow-Origin", "http://localhost:3000"); // update to match the domain you will make the request from
+	res.header("Access-Control-Allow-Origin", "https://www.edustack.uz"); // update to match the domain you will make the request from
 	res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, x-token");
 	res.header("Access-Control-Allow-Methods", "GET, PATCH, DELETE, POST");
 	next();
@@ -39,7 +39,6 @@ router.get('/pending', [auth, admin], async (req, res) => {
 
 router.get('/', async (req, res) => {
 	try {
-		console.log(req);
 		const d = new Date();
 		const news = await News.find({ date: { $gte: d.setDate(d.getDate()-30) }, status: true })
 			.sort({date: -1}).lean().cache('news');
