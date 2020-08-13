@@ -53,6 +53,6 @@ app.use('/ES/api/questions', questionsRoute);
 app.use('/ES/api/blogs', blogRoute);
 app.use('/ES/api/surveys', surveyRoute);
 
-
-app.listen(4000);
+const port = process.env.PORT || 8080 || 3000;
+app.listen(port, () => console.log(port));
 
