@@ -20,8 +20,9 @@ const surveyRoute = require('./routes/surveys');
 require('./helpers/customFuncs');
 
 // database connection
+const ConnectionString = 'mongodb+srv://Pr1nCe:r1552622q@cluster0-b1lbe.mongodb.net/edustack?retryWrites=true&w=majority'
 mongoose.connect(
-	process.env.ConnectionString, 
+	ConnectionString, 
 	{
 		useUnifiedTopology: true, 
 		useNewUrlParser: true,
