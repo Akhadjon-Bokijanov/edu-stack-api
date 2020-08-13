@@ -39,6 +39,7 @@ router.get('/pending', [auth, admin], async (req, res) => {
 
 router.get('/', async (req, res) => {
 	try {
+		console.log(req);
 		const d = new Date();
 		const news = await News.find({ date: { $gte: d.setDate(d.getDate()-30) }, status: true })
 			.sort({date: -1}).lean().cache('news');
