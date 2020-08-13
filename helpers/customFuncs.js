@@ -3,8 +3,8 @@ const redis = require('redis');
 const util = require('util');
 const redisUrl = 'redis://127.0.0.1:6379';
 
-const client = redis.createClient(redisUrl);
-client.get = util.promisify(client.get);
+//const client = redis.createClient(redisUrl);
+//client.get = util.promisify(client.get);
 
 const exec = mongoose.Query.prototype.exec;
 
@@ -19,10 +19,10 @@ mongoose.Query.prototype.exec = async function() {
 		return exec.apply(this, arguments);
 	}
 	
-	const cache = await client.get(this._cacheKey);
+	/*const cache = await client.get(this._cacheKey);
 	if(cache) {
 		return JSON.parse(cache);
-	}
+	}*/
 
 	const res = await exec.apply(this, arguments);
 
@@ -31,7 +31,7 @@ mongoose.Query.prototype.exec = async function() {
 	 *	  before deploying ('EX', numberOfSeconds)
 	 *	  Windows doesn't support those arguments :/
 	 */
-	client.set(this._cacheKey, JSON.stringify(res));
+	//client.set(this._cacheKey, JSON.stringify(res));
 	return res;
 };
 
