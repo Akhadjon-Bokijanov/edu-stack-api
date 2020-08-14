@@ -16,6 +16,7 @@ const questionsRoute = require('./routes/questions');
 const blogRoute = require('./routes/blogs');
 const surveyRoute = require('./routes/surveys');
 const exercisesRoute = require('./routes/exercises')
+const home = require('.routes/home');
 
 // patched mongoose
 require('./helpers/customFuncs');
@@ -54,7 +55,7 @@ app.use('/ES/api/questions', questionsRoute);
 app.use('/ES/api/blogs', blogRoute);
 app.use('/ES/api/surveys', surveyRoute);
 app.use('/ES/api/exercises', exercisesRoute)
+app.use('/', home);
 
 const port = 8080;
-app.listen(port, () => console.log(port));
-
+app.listen(port, '172.31.6.217');
