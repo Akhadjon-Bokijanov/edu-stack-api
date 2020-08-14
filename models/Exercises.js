@@ -28,11 +28,11 @@ const exerciseSchema = new Schema({
 		default: Date.now
 	},
 	type: {
-		type: String,
+		type: [],
 		required: true
 	},
 	category: {
-		type: String,
+		type: [],
 		required: true
 	},
 	creator: {

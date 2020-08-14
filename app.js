@@ -15,6 +15,7 @@ const resourcesRoute = require('./routes/resources');
 const questionsRoute = require('./routes/questions');
 const blogRoute = require('./routes/blogs');
 const surveyRoute = require('./routes/surveys');
+const exercisesRoute = require('./routes/exercises')
 
 // patched mongoose
 require('./helpers/customFuncs');
@@ -52,7 +53,8 @@ app.use('/ES/api/resources', resourcesRoute);
 app.use('/ES/api/questions', questionsRoute);
 app.use('/ES/api/blogs', blogRoute);
 app.use('/ES/api/surveys', surveyRoute);
+app.use('/ES/api/exercises', exercisesRoute)
 
-const port = process.env.PORT || 8080 || 3000;
+const port = 8080;
 app.listen(port, () => console.log(port));
 
