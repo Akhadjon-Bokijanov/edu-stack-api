@@ -16,7 +16,7 @@ const questionsRoute = require('./routes/questions');
 const blogRoute = require('./routes/blogs');
 const surveyRoute = require('./routes/surveys');
 const exercisesRoute = require('./routes/exercises')
-const home = require('.routes/home');
+const home = require('./routes/home');
 
 // patched mongoose
 require('./helpers/customFuncs');
