@@ -22,7 +22,7 @@ const home = require('./routes/home');
 require('./helpers/customFuncs');
 
 // database connection
-const ConnectionString = 'mongodb+srv://Pr1nCe:r1552622q@cluster0-b1lbe.mongodb.net/edustack?retryWrites=true&w=majority'
+const ConnectionString = 'mongodb://localhost:27017/'
 mongoose.connect(
 	ConnectionString, 
 	{
@@ -59,3 +59,4 @@ app.use('/', home);
 
 const port = 8080;
 app.listen(port, '172.31.6.217');
+//app.listen(4000);
