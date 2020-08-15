@@ -22,7 +22,7 @@ const home = require('./routes/home');
 require('./helpers/customFuncs');
 
 // database connection
-const ConnectionString = 'mongodb://127.0.0.1:27017/'
+const ConnectionString = 'mongodb://localhost/edustackapi';
 mongoose.connect(
 	ConnectionString, 
 	{
