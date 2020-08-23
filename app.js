@@ -22,8 +22,7 @@ const home = require('./routes/home');
 require('./helpers/customFuncs');
 
 // database connection
-//const ConnectionString = 'mongodb://localhost/edustackapi';
-const ConnectionString = 'mongodb+srv://Pr1nCe:r1552622q@cluster0-b1lbe.mongodb.net/edustack?retryWrites=true&w=majority';
+const ConnectionString = 'mongodb://ar_es:Everything is gonna be alright!@localhost:27017/edustack';
 mongoose.connect(
 	ConnectionString, 
 	{
