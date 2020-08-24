@@ -2,21 +2,18 @@ const express = require('express');
 const router = express.Router();
 const multer = require('multer');
 const fs = require('fs');
+const AWS = require('aws-sdk');
+require('dotenv/config');
+
 const News = require('../models/News');
 const User = require('../models/Users');
 const auth = require('../helpers/auth');
 const { admin, collaborator, newsCreator } = require('../helpers/admin');
-const { newsStorage, fileFilter } = require('../helpers/multerVars');
 const { clearCache } = require('../helpers/customFuncs');
-
-const upload = multer({ 
-	storage: newsStorage,
-	limits: {
-		fileSize: 1024 * 1024 * 5
-	},
-	fileFilter: fileFilter
+const s3 = new AWS.S3({
+	accessKeyId: process.env.accessKeyId,
+	secretAccessKey: process.env.secretAccessKey
 });
-
 
 router.use(function(req, res, next) {
 	res.header("Access-Control-Allow-Origin", "https://www.edustack.uz"); // update to match the domain you will make the request from
@@ -74,20 +71,18 @@ router.get('/:newsID', async (req, res) => {
 	}
 });
 
-router.post('/', [auth, collaborator, upload.any()], async (req, res) => {
+router.post('/', [auth, collaborator], async (req, res) => {
 	try {	
-		let news = new News({
+		const news = new News({
 			title: req.body.title,
 			description: req.body.description,
 			organization: req.body.organization,
 			category: req.body.category,
 			isImportant: req.body.isImportant,
-			detail: req.body.detail
+			detail: req.body.detail,
+			imageUrl: req.body.imageUrl,
+			creatorId = req.user._id
 		});
-		if(req.files.length > 0) {
-			news.imageUrl = req.files[0].path.replace("\\", "/").replace("\\", "/");
-		}
-		news.creatorId = req.user._id;
 		const savedNews = await news.save();
 		
 		res.status(200).json(savedNews);
@@ -100,19 +95,15 @@ router.post('/', [auth, collaborator, upload.any()], async (req, res) => {
 
 router.delete('/:newsID', [auth, newsCreator], async (req, res) => {
 	try {
-		const news = await News.findById(req.params.newsID);
-		if(news.imageUrl !== 'uploads/newsImages/default.png') {
-			fs.unlink(news.imageUrl, (err) => {
-				if(err) {
-					console.log(err);
-				}
-			});
-		}	
-		const removed = await News.deleteOne({ _id: req.params.newsID});
-		res.status(200).json(removed);
+		const news = await News.findByIdAndDelete(req.params.newsID);
+		res.status(200).json({ success: true });
+		await s3.deleteObject({
+			Key: req.body.imageUrl,
+			Bucket: 'edustack.uz'
+		});
 	}
 	catch(err) {
-		res.status(400).json({ message : err });
+		res.status(400).json({ message : err.message });
 	}
 	clearCache([`news_${req.params.newsID}`]);
 });

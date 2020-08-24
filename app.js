@@ -16,13 +16,14 @@ const questionsRoute = require('./routes/questions');
 const blogRoute = require('./routes/blogs');
 const surveyRoute = require('./routes/surveys');
 const exercisesRoute = require('./routes/exercises')
+const uploadRoute = require('./routes/upload');
 const home = require('./routes/home');
 
 // patched mongoose
 require('./helpers/customFuncs');
 
 // database connection
-const ConnectionString = 'mongodb://ar_es:Everything is gonna be alright!@localhost:27017/edustack';
+const ConnectionString = process.env.ConnectionString;
 mongoose.connect(
 	ConnectionString, 
 	{
@@ -54,9 +55,10 @@ app.use('/ES/api/resources', resourcesRoute);
 app.use('/ES/api/questions', questionsRoute);
 app.use('/ES/api/blogs', blogRoute);
 app.use('/ES/api/surveys', surveyRoute);
-app.use('/ES/api/exercises', exercisesRoute)
+app.use('/ES/api/exercises', exercisesRoute);
+app.use('/ES/api/upload', uploadRoute);
 app.use('/', home);
 
-const port = 8080;
-app.listen(port, '172.31.6.217');
+const port = 8000;
+app.listen(port);
 //app.listen(4000);

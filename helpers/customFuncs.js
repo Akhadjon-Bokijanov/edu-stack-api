@@ -31,7 +31,7 @@ mongoose.Query.prototype.exec = async function() {
 	 *	  before deploying ('EX', numberOfSeconds)
 	 *	  Windows doesn't support those arguments :/
 	 */
-	client.set(this._cacheKey, JSON.stringify(res));
+	client.set(this._cacheKey, JSON.stringify(res), 'EX', 3600);
 	return res;
 };
 

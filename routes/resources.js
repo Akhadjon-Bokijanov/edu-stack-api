@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 const fs = require('fs');
 const multer = require('multer');
+const AWS = require('aws-sdk');
+require('dotenv/config');
 
 const auth = require('../helpers/auth');
 const { admin, collaborator, creator } = require('../helpers/admin');
@@ -9,13 +11,9 @@ const User = require('../models/Users');
 const Resource = require('../models/Resources');
 const { resourceFilter, resourceStorage } = require('../helpers/multerVars');
 const { clearCache } = require('../helpers/customFuncs');
-
-const upload = multer({
-	storage: resourceStorage,
-	limits: {
-		fileSize: 1024 * 1024 * 256
-	},
-	fileFilter: resourceFilter
+const s3 = new AWS.S3({
+	accessKeyId: process.env.accessKeyId,
+	secretAccessKey: process.env.secretAccessKey
 });
 
 
@@ -74,31 +72,28 @@ router.get('/:id', auth, async (req, res) => {
 	}
 });
 
-router.post('/', [auth, collaborator, upload.any()], async (req, res) => {
+router.post('/', [auth, collaborator], async (req, res) => {
 	try {
-		let resource = new Resource({
+		const resource = new Resource({
 			title: req.body.title,
 			description: req.body.description,
 			resourceType: req.body.resourceType,
 			category: req.body.category,
 			costType: req.body.costType,
 			cost: req.body.cost,
+			file: {
+				fileName: req.body.fileName,
+				fileType: req.body.fileType,
+				fileSize: req.body.fileSize
+			},
 			creator: {
 				_id: req.user._id,
 				fullName: `${req.user.firstName} ${req.user.lastName}`,
 				avatar: req.user.avatar
 			}
 		});
-		if(req.files.length === 1) {
-			resource.file.fileName = req.files[0].filename.split('.')[0];
-			resource.file.fileType = req.files[0].originalname.split('.').slice(-1)[0];
-			resource.file.fileSize = req.files[0].size;
-			const saved = await resource.save();
-			res.status(200).json(saved);
-		}
-		else {
-			return res.status(400).json({ message: "Only one file required." });
-		}
+		const saved = await Resource.save();
+		res.status(200).json(saved);
 	}
 	catch (err) {
 		res.status(400).json({ message: err.message });
@@ -134,60 +129,34 @@ router.patch('/:id', [auth, creator], async (req, res) => {
 // should be changed when AWS S3 used
 router.patch('/file/:id', [auth, creator], async (req, res) => {
 	try {
-		if(req.files.length === 1) {
-			const path = `uploads/resources/${req.body.fileName}.${req.body.fileType}`.toString();
-			fs.exists(path, (exists) => {
-				if(exists) {
-					fs.unlink(path, (err) => {
-						if(err) {
-							console.log(err);
-						}
-					});
+		const resource = await Resource.findByIdAndUpdate(req.params.id,
+			{
+				$set: {
+					file: req.body.file
 				}
-				else {
-					return res.status(404).json({ message: "File is not found." });
-				}
-			});
-
-			const update = await Resource.findOneAndUpdate(
-				{ _id: req.params.id },
-				{
-					$set: {
-						'file.filename': req.files[0].filename.split('.')[0],
-						'file.fileType': req.files[0].originalname.split('.').slice(-1)[0],
-						'file.fileSize': req.files[0].size
-					}
-				},
-				{ new: true }
-			);
-			res.status(200).json({ success: true });
-		}
-		else {
-			res.status(400).json({ message: "Only one file required." });
-		}
+			},
+			{ new: true }
+		);
+		res.status(200).json(resource);
+		await s3.deleteObject({
+			Key: req.body.oldFileName,
+			Bucket: 'edustack.uz'
+		});
 	}
 	catch (err) {
 		res.status(400).json({ message: err.message });
 	}
+	clearCache(['resource', 'resource_all', `resource_${req.params.id}`]);
 });
 
 router.delete('/:id', [auth, creator], async (req, res) => {
 	try {
-		const path = `uploads/resources/${req.body.fileName}.${req.body.fileType}`.toString();
-		fs.exists(path, (exists) => {
-			if(exists) {
-				fs.unlink(path, (err) => {
-					if(err) {
-						console.log(err);
-					}
-				});
-			}
-			else {
-				return res.status(404).json({ message: "File is not found." });
-			}
-		});
-		const removed = await Resource.deleteOne({ _id: req.params.id });
-		res.status(200).json(removed);	
+		await Resource.findByIdAndDelete(req.params.id);
+		res.status(200).json({ success: true });
+		await s3.deleteObject({
+			Key: req.body.file.fileName,
+			Bucket: 'edustack.uz'
+		});	
 	}
 	catch (err) {
 		res.status(400).json({ message: err.message });

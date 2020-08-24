@@ -4,6 +4,8 @@ const multer = require('multer');
 const _ = require('lodash');
 const fs = require('fs');
 const bcrypt = require('bcrypt');
+const AWS = require('aws-sdk');
+require('dotenv/config');
 
 const User = require('../models/Users');
 const News = require('../models/News');
@@ -12,16 +14,10 @@ const Question = require('../models/Questions');
 const Blog = require('../models/Blogs');
 const Survey = require('../models/Surveys');
 const auth = require('../helpers/auth');
-const { userStorage, fileFilter } = require('../helpers/multerVars');
 const { clearCache } = require('../helpers/customFuncs');
-
-
-const upload = multer({
-	storage: userStorage,
-	limits: {
-		fileSize: 1024 * 1024 * 5
-	},
-	fileFilter: fileFilter
+const s3 = new AWS.S3({
+	accessKeyId: process.env.accessKeyId,
+	secretAccessKey: process.env.secretAccessKey
 });
 
 router.use(function(req, res, next) {
@@ -47,33 +43,29 @@ router.get('/', auth, async (req, res) => {
 });
 
 
-router.patch('/changePhoto', [auth, upload.any()], async (req, res) => {
+router.patch('/changePhoto', auth, async (req, res) => {
 	try {
-		if(req.files.length > 0) {
-			if(req.user.avatar !== 'uploads/avatars/default.png') {
-				fs.unlink(req.user.avatar, (err) => {
-					if(err) {
-						console.log(err);
-					}
-				});
-			}
-			const user = await User.findOneAndUpdate(
-				{ _id: req.user._id},
+		if(req.body.newAvatar && req.body.oldAvatar && req.body.newAvatar.includes(req.user._id)) {
+			const user = await User.findByIdAndUpdate(req.user._id, 
 				{
 					$set: {
-						avatar: req.files[0].path.replace("\\", "/").replace("\\", "/")
-					} 
+						avatar: req.body.newAvatar
+					}	
 				},
 				{ new: true }
 			);
 			res.status(200).header('x-token', user.genToken()).json(user.toJSON());
+			await s3.deleteObject({
+				Key: req.body.oldAvatar,
+				Bucket: 'edustack.uz'
+			});
 		}
 		else {
-			res.status(400).json({ message: 'No proper image uploaded(allowed image types are: .png, .jpeg, .jpg).' });
+			return res.status(400).json({ message: 'Invalid request.' });
 		}
 	}
 	catch (err) {
-		res.status(400).json({ message: err.message });
+		return res.status(400).json({ message: err.message });
 	}
 	clearCache([`user_${req.user._id}`]);
 });

@@ -11,7 +11,7 @@ const NewsSchema = new mongoose.Schema({
 	},
 	imageUrl: {
 		type: String,
-		default: 'uploads/newsImages/default.png'
+		default: 'news/default.png'
 	},
 	organization: String,
 	category: {
