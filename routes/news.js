@@ -81,7 +81,7 @@ router.post('/', [auth, collaborator], async (req, res) => {
 			isImportant: req.body.isImportant,
 			detail: req.body.detail,
 			imageUrl: req.body.imageUrl,
-			creatorId = req.user._id
+			creatorId: req.user._id
 		});
 		const savedNews = await news.save();
 		
