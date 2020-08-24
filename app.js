@@ -43,9 +43,7 @@ app.use(bodyParser.json({
 app.use(bodyParser.urlencoded({
 		limit: "50mb", extended: true, parameterLimit:50000
 	}));
-app.use('/uploads/newsImages', express.static('uploads/newsImages'));
-app.use('/uploads/avatars', express.static('uploads/avatars'));
-app.use('/uploads/resources', express.static('uploads/resources'));
+
 app.use('/ES/api/news', newsRoute);
 app.use('/ES/api/register', registerRoute);
 app.use('/ES/api/login', loginRoute);
