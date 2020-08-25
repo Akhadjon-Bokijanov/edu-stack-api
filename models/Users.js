@@ -51,7 +51,19 @@ const userSchema = new mongoose.Schema({
 	description: {
 		type: String
 	},
-	vToken: String,
+	vToken: {
+		type: String,
+		select: false
+	},
+	isVerified: {
+		type: Boolean,
+		default: false
+	},
+	tryCount: {
+		type: Number,
+		default: 3,
+		select: false
+	},
 	contact: String,
 	registeredDate: {
 		type: Date,
@@ -98,7 +110,7 @@ const userSchema = new mongoose.Schema({
 });
 
 
-const jwtPrivateKey = 'eR@sorq&W#pGEn1faY398PsoYqa^wp#a93Dist.9e' 
+const jwtPrivateKey = process.env.jwtPrivateKey; 
 userSchema.methods.genToken = function() {
 	const token = jwt.sign(
 		_.pick(this, ['_id', 'firstName', 'lastName', 'email', 'role', 'avatar']), 
