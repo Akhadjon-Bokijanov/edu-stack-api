@@ -10,6 +10,14 @@ const s3 = new AWS.S3({
 	secretAccessKey: process.env.secretAccessKey
 });
 
+
+router.use(function(req, res, next) {
+	res.header("Access-Control-Allow-Origin", "https://www.edustack.uz"); // update to match the domain you will make the request from
+	res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, x-token");
+	res.header("Access-Control-Allow-Methods", "GET, PATCH, DELETE, POST");
+	next();
+});
+
 // Handle uploading stuff
 router.post('/', auth, async (req, res) => {
 	try {
