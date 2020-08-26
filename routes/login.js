@@ -67,7 +67,7 @@ router.post('/verify', async (req, res) => {
 			}
 		}
 		await user.save();
-		res.status(200).header('x-token', user.genToken()).json({ success: true });
+		res.status(200).header('x-token', user.genToken()).json(user.toJSON());
 	}
 	catch (err) {
 		res.status(400).json({ message: err.message });
