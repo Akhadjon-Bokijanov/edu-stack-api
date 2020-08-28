@@ -46,19 +46,10 @@ router.get('/', auth, async (req, res) => {
 router.patch('/changePhoto', auth, async (req, res) => {
 	try {
 		if(req.body.newAvatar && req.body.oldAvatar && req.body.newAvatar.includes(req.user._id)) {
-			const user = await User.findByIdAndUpdate(req.user._id, 
-				{
-					$set: {
-						avatar: req.body.newAvatar
-					}	
-				},
-				{ new: true }
-			);
+			const user = await User.findById(req.user._id);
+			user.avatar = req.body.newAvatar;
+			await user.save();
 			res.status(200).header('x-token', user.genToken()).json(user.toJSON());
-			await s3.deleteObject({
-				Key: req.body.oldAvatar,
-				Bucket: 'edustack.uz'
-			});
 		}
 		else {
 			return res.status(400).json({ message: 'Invalid request.' });
