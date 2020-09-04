@@ -208,7 +208,7 @@ router.get('/mynews', auth, async (req, res) => {
 router.post('/follow', auth, async (req, res) => {
 	const { follower, following, action } = req.body;
 	try {
-
+		const curUser = req.user._id;
 		if(!(req.user._id === follower._id || req.user._id === following._id)) {
 			return res.status(403).json({ message: 'You are not allowed.' });
 		}
@@ -226,39 +226,53 @@ router.post('/follow', auth, async (req, res) => {
 
 		switch(action) {
 			case 'follow':
-				await Promise.all([
+				Promise.all([
 					User.findByIdAndUpdate(follower._id, {
 						$push: {
 							following: following
 						}
-					}),
+					}, { new: true }),
 					User.findByIdAndUpdate(following._id, {
 						$push: {
 							followers: follower
 						}
-					})
-				]);
+					}, { new: true })
+				]).then(result => {
+					if(curUser === result[0]._id) {
+						res.status(200).json(result[0].toJSON());
+					}
+					else {
+						res.status(200).json(result[1].toJSON());
+					}
+				});
 				break;
 
 			case 'unfollow':
-				await Promise.all([
+				Promise.all([
 					User.findByIdAndUpdate(follower._id, {
 						$pull: {
 							following: following
 						}
-					}),
+					}, { new: true }),
 					User.findByIdAndUpdate(following._id, {
 						$pull: {
 							followers: follower
 						}
-					})
-				]);
+					}, { new: true })
+				]).then(result => {
+					if(curUser === result[0]._id) {
+						res.status(200).json(result[0].toJSON());
+					}
+					else {
+						res.status(200).json(result[1].toJSON());
+					}
+				});
 				break;
 
 			default: 
 				break;
 		}
-		res.status(200).json({ success: true });
+		//res.status(200).json(resUser);
 	}
 	catch (err) {
 		res.status(400).json({ message: err.message });
@@ -271,7 +285,7 @@ router.post('/wishlist', auth, async (req, res) => {
 		const wish = await User.findByIdAndUpdate(
 			req.user._id,
 			{
-				$push: {
+				$set: {
 					wishList: req.body
 				}
 			},
@@ -285,49 +299,13 @@ router.post('/wishlist', auth, async (req, res) => {
 	clearCache([`user_${req.user._id}`]);
 });
 
-router.patch('/wishlist', auth, async (req, res) => {
-	try {
-		const wish = await User.findByIdAndUpdate(
-			req.user._id,
-			{
-				$pull: {
-					wishList: req.body
-				}
-			},
-			{ new: true }
-		);
-		res.status(200).json(wish);
-	}
-	catch (err) {
-		res.status(400).json({ message: err.message });
-	}
-	clearCache([`user_${req.user._id}`]);
-});
 
 router.post('/cartlist', auth, async (req, res) => {
 	try {
 		const cart = await User.findByIdAndUpdate(
 			req.user._id,
 			{
-				$push: {
-					cartList: req.body
-				}
-			},
-			{ new: true }
-		);
-		res.status(200).json(cart);
-	}
-	catch (err) {
-		res.status(400).json({ message: err.message });
-	}
-});
-
-router.patch('/cartlist', auth, async (req, res) => {
-	try {
-		const cart = await User.findByIdAndUpdate(
-			req.user._id,
-			{
-				$pull: {
+				$set: {
 					cartList: req.body
 				}
 			},

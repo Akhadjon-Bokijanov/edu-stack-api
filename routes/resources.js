@@ -1,7 +1,5 @@
 const express = require('express');
 const router = express.Router();
-const fs = require('fs');
-const multer = require('multer');
 const AWS = require('aws-sdk');
 require('dotenv/config');
 
@@ -9,7 +7,6 @@ const auth = require('../helpers/auth');
 const { admin, collaborator, creator } = require('../helpers/admin');
 const User = require('../models/Users');
 const Resource = require('../models/Resources');
-const { resourceFilter, resourceStorage } = require('../helpers/multerVars');
 const { clearCache } = require('../helpers/customFuncs');
 const s3 = new AWS.S3({
 	accessKeyId: process.env.accessKeyId,
@@ -81,6 +78,7 @@ router.post('/', [auth, collaborator], async (req, res) => {
 			category: req.body.category,
 			costType: req.body.costType,
 			cost: req.body.cost,
+			
 			file: {
 				fileName: req.body.fileName,
 				fileType: req.body.fileType,
@@ -185,7 +183,7 @@ router.patch('/rate/:id', auth, async (req, res) => {
 					$push: {
 						ratedUsers: {
 							user: req.user._id,
-							rating: req.body.rating
+		rating: req.body.rating
 						}
 					}
 				},
@@ -217,19 +215,21 @@ router.get('/rating/:userId/:resourceId', auth, async (req, res) => {
 });
 
 
-router.get('/download/:file/:mime/:title', auth, async (req, res) => {
+/*
+	docs should be changed
+	route must be corrected (this doens't work now)
+*/
+router.post('/download', auth, async (req, res) => {
 	try {
-		const file = req.params.file;
-		const title = req.params.title;
-		const mime = req.params.mime;
-		res.header({
-			'Content-Disposition': "attachment;filename=EduStackuz2.pdf",
-			'Content-Type': "application/pdf"
-		})
-			.download(`uploads/resources/${file}.${mime}`, `EduStackuz_${title}.${mime}`);
+		const file = req.body.file.fileName;
+		const url = s3.getSignedUrl('getObject', {
+						 Bucket: 'edustack.uz',
+						 Key: file,
+						 Expires: 3600
+					});
+		res.status(200).json({ url: url });
 	}
 	catch (err) {
-		console.log(err.message)
 		res.status(400).json({ message: err.message });
 	}
 });

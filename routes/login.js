@@ -31,7 +31,7 @@ router.post('/', async (req, res) => {
 				return res.status(200).header('x-token', user.genToken()).json(user.toJSON());
 			}
 
-			res.status(200).json(user.toJSON());
+			res.status(200).header('x-token', user.genToken()).json(user.toJSON());
 		}
 		else {
 			res.status(400).json({ message: 'Invalid email or password.' });

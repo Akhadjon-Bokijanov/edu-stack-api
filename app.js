@@ -17,6 +17,7 @@ const blogRoute = require('./routes/blogs');
 const surveyRoute = require('./routes/surveys');
 const exercisesRoute = require('./routes/exercises')
 const uploadRoute = require('./routes/upload');
+const coursesRoute = require('./routes/courses');
 const home = require('./routes/home');
 
 // patched mongoose
@@ -55,6 +56,7 @@ app.use('/ES/api/blogs', blogRoute);
 app.use('/ES/api/surveys', surveyRoute);
 app.use('/ES/api/exercises', exercisesRoute);
 app.use('/ES/api/upload', uploadRoute);
+app.use('/ES/api/courses', coursesRoute);
 app.use('/', home);
 
 const port = 8000;
