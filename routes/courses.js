@@ -172,6 +172,26 @@ router.delete('/:id', [auth, creator], async (req, res) => {
 	clearCache(['course', 'course_free']);
 });
 
+router.patch('/rate/:id', auth, async (req, res) => {
+	try {
+		const course = await Course.findById(req.params.id).select('+ratedUsers');
+		if(course.ratedUsers && course.ratedUsers.includes(req.user._id)) {
+			return res.status(400).json({ message: "You have already rated this course!" });
+		}
+
+		const {average, voters} = course.rating;
+		course.rating.average = (average * voters + req.body.rating) / (voters + 1);
+		course.rating.voters += 1;
+		course.ratedUsers.push(req.user._id);
+
+		const rated = await course.save();
+		res.status(200).json(rated);
+	}
+	catch (err) {
+		res.status(400).json({ message: err.message });
+	}
+});
+
 router.get('/search/:text', async (req, res) => {
 	try {
 		const search = await Course.find(

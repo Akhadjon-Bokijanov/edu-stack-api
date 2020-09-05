@@ -31,8 +31,14 @@ const courseSchema = new Schema({
 		select: false
 	},
 	rating: {
-		type: Number,
-		default: 0
+		average: {
+			type: Number,
+			default: 0
+		},
+		voters: {
+			type: Number,
+			default: 0
+		}
 	},
 	ratedUsers: {
 		type: [String],

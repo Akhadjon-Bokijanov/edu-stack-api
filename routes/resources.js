@@ -216,8 +216,7 @@ router.get('/rating/:userId/:resourceId', auth, async (req, res) => {
 
 
 /*
-	docs should be changed
-	route must be corrected (this doens't work now)
+	generates pre signed url to download the resource
 */
 router.post('/download', auth, async (req, res) => {
 	try {
