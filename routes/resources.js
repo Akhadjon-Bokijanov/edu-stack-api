@@ -83,7 +83,8 @@ router.post('/', auth, async (req, res) => {
 			file: {
 				fileName: req.body.file.fileName,
 				fileType: req.body.file.fileType,
-				fileSize: req.body.file.fileSize
+				fileSize: req.body.file.fileSize,
+				extension: req.body.file.extension
 			},
 			creator: {
 				_id: req.user._id,
