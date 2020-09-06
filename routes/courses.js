@@ -8,7 +8,8 @@ const { admin, creator } = require('../helpers/admin');
 const { clearCache } = require('../helpers/customFuncs');
 const s3 = new AWS.S3({
 	accessKeyId: process.env.accessKeyId,
-	secretAccessKey: process.env.secretAccessKey
+	secretAccessKey: process.env.secretAccessKey,
+	region: 'ap-northeast-2'
 });
 
 
