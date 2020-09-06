@@ -69,7 +69,7 @@ router.get('/:id', auth, async (req, res) => {
 	}
 });
 
-router.post('/', [auth, collaborator], async (req, res) => {
+router.post('/', auth, async (req, res) => {
 	try {
 		const resource = new Resource({
 			title: req.body.title,
@@ -80,9 +80,9 @@ router.post('/', [auth, collaborator], async (req, res) => {
 			cost: req.body.cost,
 			
 			file: {
-				fileName: req.body.fileName,
-				fileType: req.body.fileType,
-				fileSize: req.body.fileSize
+				fileName: req.body.file.fileName,
+				fileType: req.body.file.fileType,
+				fileSize: req.body.file.fileSize
 			},
 			creator: {
 				_id: req.user._id,
@@ -90,7 +90,7 @@ router.post('/', [auth, collaborator], async (req, res) => {
 				avatar: req.user.avatar
 			}
 		});
-		const saved = await Resource.save();
+		const saved = await resource.save();
 		res.status(200).json(saved);
 	}
 	catch (err) {
