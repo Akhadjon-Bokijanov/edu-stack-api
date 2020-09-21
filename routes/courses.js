@@ -59,6 +59,9 @@ router.get('/:id', auth, async (req, res) => {
 			if(course.paidUsers && course.paidUsers.includes(req.user._id)) {
 				return res.status(200).json(course);
 			}
+			else if(req.user._id == course.creator._id) {
+				return res.status(200).json(course);
+			}
 			return res.status(403).json({ message: 'You have not paid for this course!' });
 		}
 		res.status(200).json(course);
